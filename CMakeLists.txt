@@ -9,7 +9,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # add_subdirectory(external/glfw)
 
-add_library(Engine INTERFACE)
+add_library(Engine
+    "Engine.cpp"
+)
 
 target_include_directories(Engine INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
