@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/import_files/public_imports.h"
+#include "core/window/Window.h"
 
 class Engine {
 public:
@@ -9,4 +9,8 @@ public:
 
 private:
     inline static bool terminated = false;
+    inline static Window* defaultWindow = nullptr;
+
+    static void SetupEngine();
+    static void MainLoop();
 };
