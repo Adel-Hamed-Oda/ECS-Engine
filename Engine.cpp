@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-#include "core/private_imports.h"
+#include "core/import_files/private_imports.h"
 
 void Engine::run() {
     SetupExternals();
