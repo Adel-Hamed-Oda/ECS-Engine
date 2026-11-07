@@ -5,3 +5,7 @@
 void Engine::run() {
     std::cout << "Engine running." << std::endl;
 };
+
+void Engine::terminate() {
+    std::cout << "Engine terminating." << std::endl;
+};

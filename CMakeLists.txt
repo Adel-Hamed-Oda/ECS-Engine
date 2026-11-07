@@ -15,7 +15,6 @@ add_library(Engine
 
 target_include_directories(Engine INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/core
 )
 
 find_package(OpenGL REQUIRED)

@@ -5,4 +5,5 @@
 class Engine {
 public:
     static void run();
+    static void terminate();
 };
