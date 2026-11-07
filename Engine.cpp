@@ -1,6 +1,9 @@
 #include "Engine.h"
 
+#include "core/import_files/public_imports.h"
 #include "core/import_files/private_imports.h"
+
+#include "core/window/Window.h"
 
 void Engine::run() {
     SetupExternals();
@@ -14,18 +17,12 @@ void Engine::terminate() {
 };
 
 void SetupExternals() {
-    if (!glfwInit()) { glfwTerminate(); }
-
+    glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     gladLoadGL((GLADloadfunc)glfwGetProcAddress);
-}
 
-    /*PublicDomain::CurrentWindow = new Window(CONFIG::WINDOW::WIDTH, CONFIG::WINDOW::HEIGHT, CONFIG::WINDOW::TITLE, CONFIG::WINDOW::FULLSCREEN);
-    if (PublicDomain::CurrentWindow == nullptr)
-    {
-        glfwTerminate();
-    }
-    glfwMakeContextCurrent(PublicDomain::CurrentWindow->GetGLFWWindow());*/
+    new Window("ECS Test Game", glm::vec2(0, 0), glm::vec2(800, 600));
+}
