@@ -6,4 +6,7 @@ class Engine {
 public:
     static void run();
     static void terminate();
+
+private:
+    inline static bool terminated = false;
 };

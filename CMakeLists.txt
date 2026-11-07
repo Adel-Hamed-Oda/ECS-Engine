@@ -23,11 +23,12 @@ target_include_directories(Engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/external/glm
     ${CMAKE_CURRENT_SOURCE_DIR}/external/glad/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/include
 )
 
 find_package(OpenGL REQUIRED)
 
-target_link_libraries(Engine INTERFACE 
+target_link_libraries(Engine PUBLIC 
     OpenGL::GL
     glfw
 )
