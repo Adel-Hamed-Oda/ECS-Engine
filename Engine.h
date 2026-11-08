@@ -3,6 +3,7 @@
 #include <string>
 #include "core/window/Window.h"
 #include "core/scenes/Scene.h"
+#include "core/global/EngineTime.h"
 
 class Engine {
 public:

@@ -176,8 +176,7 @@ void Engine::MainLoop() {
 
     while (!terminated) {
         double currentFrameTime = glfwGetTime();
-        deltaTime = static_cast<float>(currentFrameTime - lastFrameTime);
-        lastFrameTime = currentFrameTime;
+        Time::Update(&lastFrameTime, currentFrameTime);
 
         glfwPollEvents();
 
