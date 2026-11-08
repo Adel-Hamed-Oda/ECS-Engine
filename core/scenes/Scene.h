@@ -22,14 +22,30 @@ public:
     void Update() {}
     void Render() {}
 
-    // if the entity index is greater than the size of the vector,
-    // fill it with falses until the index is reached, then set the entity index to true
-    // otherwise, look for the first false value in the vector and set it to true
     Entity Instantiate() { 
         return registry.CreateEntity();
     }
-    void AddSystem(ISystem* system, SystemType type) {
-        systems[static_cast<int>(type)].push_back(system);
+    template <typename T, typename... Args>
+    T* AddSystem(SystemType type, Args&&... args) {
+        // Construct the specific system type (T) dynamically
+        auto system = std::make_unique<T>(std::forward<Args>(args)...);
+        T* rawPtr = system.get(); 
+        
+        // put it in its appropriate vector in the array of vectors
+        systems[static_cast<int>(type)].push_back(std::move(system));
+        
+        return rawPtr;
+    }
+    void DeleteSystem(ISystem* system) {
+        for (auto& systemList : systems) {
+            systemList.erase(
+                std::remove_if(systemList.begin(), systemList.end(),
+                    [system](const std::unique_ptr<ISystem>& ptr) {
+                        return ptr.get() == system;
+                    }), 
+                systemList.end()
+            );
+        }
     }
 
     template <typename T, typename... Args>
@@ -53,7 +69,7 @@ public:
 
 private:
     std::string name; // for referencing purposes, not as the unique identifier
-    std::vector<ISystem*> systems[SystemTypeCount];
+    std::vector<std::unique_ptr<ISystem>> systems[SystemTypeCount];
 
     inline static Registry registry; // for shared entities across scenes (aka DontDestroyOnLoad from unity)
     inline static std::vector<Scene*> scenes;
