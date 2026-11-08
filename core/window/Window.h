@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/import_files/private_imports.h"
+#include "core/private_imports.h"
 
 class Window
 {
@@ -44,7 +44,7 @@ public:
     }
 	
     int GetId() const { return id; }
-    bool GLWindowShouldClose() const { return glfwWindowShouldClose(m_window); }
+    bool GLWindowShouldClose() const { return !m_window || glfwWindowShouldClose(m_window); }
 
     glm::ivec2 GetPosition() const {
         if (!m_window) return glm::ivec2(0, 0);

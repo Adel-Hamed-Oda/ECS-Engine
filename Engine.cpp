@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-#include "core/import_files/private_imports.h"
+#include "core/private_imports.h"
 
 void Engine::run() {
     SetupEngine();
@@ -25,11 +25,13 @@ void Engine::SetupEngine() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    if (Window::GetPrimaryWindow() == nullptr) {
+    /*if (Window::GetPrimaryWindow() == nullptr) {
         new Window("ECS Test Game", glm::vec2(100, 100), glm::vec2(800, 600));
-    }
+    }*/
 
-    gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+    if (glfwGetCurrentContext() != nullptr) {
+        gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+    }
 }
 
 void Engine::MainLoop()
@@ -38,27 +40,36 @@ void Engine::MainLoop()
 
     while (!terminated)
     {
-        Window* primary = Window::GetPrimaryWindow();
-        if (!primary || primary->GLWindowShouldClose()) {
-            break;
-        }
-
         glfwPollEvents();
 
-        glClearColor(
-            0,
-            0,
-            0,
-            0
-        );
+        Window* primary = Window::GetPrimaryWindow();
+        if (primary != nullptr)
+        {
+            if (primary->GLWindowShouldClose())
+            {
+                delete primary;
+            }
+            else
+            {
+                glClearColor(
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    1.0f
+                );
 
-        // clears the background color and depth buffer
-        glClear(
-            GL_COLOR_BUFFER_BIT |
-            GL_DEPTH_BUFFER_BIT
-        );
-            
-        primary->SwapBuffers();
+                glClear(
+                    GL_COLOR_BUFFER_BIT |
+                    GL_DEPTH_BUFFER_BIT
+                );
+
+                primary->SwapBuffers();
+            }
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+        }
     }
 
     terminate();

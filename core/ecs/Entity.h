@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/import_files/private_imports.h"
+#include "core/private_imports.h"
 
 using Entity = uint32_t;
 constexpr Entity NULL_ENTITY = 0xFFFFFFFF;
