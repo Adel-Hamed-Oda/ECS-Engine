@@ -25,10 +25,6 @@ void Engine::SetupEngine() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    /*if (Window::GetPrimaryWindow() == nullptr) {
-        new Window("ECS Test Game", glm::vec2(100, 100), glm::vec2(800, 600));
-    }*/
-
     if (glfwGetCurrentContext() != nullptr) {
         gladLoadGL((GLADloadfunc)glfwGetProcAddress);
     }
@@ -51,17 +47,27 @@ void Engine::MainLoop()
             }
             else
             {
-                glClearColor(
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    1.0f
-                );
+                Scene* currentScene = Scene::GetCurrentScene();
+                if (currentScene != nullptr)
+                {
+                    if (!currentScene->IsStarted()) {
+                        currentScene->Start();
+                    } else {
+                        currentScene->Update();
+                    }
 
-                glClear(
-                    GL_COLOR_BUFFER_BIT |
-                    GL_DEPTH_BUFFER_BIT
-                );
+                    glClearColor(
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        1.0f
+                    );
+                    glClear(
+                        GL_COLOR_BUFFER_BIT |
+                        GL_DEPTH_BUFFER_BIT
+                    );
+                    currentScene->Render();
+                }
 
                 primary->SwapBuffers();
             }

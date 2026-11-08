@@ -2,6 +2,7 @@
 
 #include "core/window/Window.h"
 #include "core/scenes/Scene.h"
+#include "core/enums.h"
 
 class Engine {
 public:
