@@ -6,7 +6,7 @@
 class ISystem {
 public:
     virtual ~ISystem() = default;
-    virtual void apply(Registry& registry) = 0; // The apply() function you requested
+    virtual void apply(Registry& registry) = 0;
 };
 
 template <typename... Comps>
