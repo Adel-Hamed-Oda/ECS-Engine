@@ -12,3 +12,11 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <cassert>
+#include <memory>
+#include <queue>
+#include <unordered_map>
+
+// Bitwise manipulation libraries
+#include <cstdint>
+#include <bitset>
