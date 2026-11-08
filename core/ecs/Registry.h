@@ -79,17 +79,23 @@ public:
         return signatures[GetEntityIndex(e)].test(GetComponentTypeID<T>());
     }
 
-    // Iterate entities matching a set of components
+    // Iterates over all entities that have the specified component signature and applies the function to them.
+    template <typename Func>
+    void ForEach(Func&& func, const ComponentSignature& mask) {
+        for (Entity e : aliveEntities) {
+            if ((signatures[GetEntityIndex(e)] & mask) == mask) {
+                func(e);
+            }
+        }
+    }
+
+    // Same as previous, taking in individual component types
     template <typename... Comps, typename Func>
     void ForEach(Func&& func) {
         ComponentSignature mask;
         (mask.set(GetComponentTypeID<Comps>()), ...);
-
-        for (Entity e : aliveEntities) {
-            if ((signatures[GetEntityIndex(e)] & mask) == mask) {
-                func(e, GetComponent<Comps>(e)...);
-            }
-        }
+        
+        ForEach(std::forward<Func>(func), mask);
     }
 
 private:

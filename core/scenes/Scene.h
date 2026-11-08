@@ -3,17 +3,19 @@
 #include "core/private_imports.h"
 #include "core/ecs/Registry.h"
 #include "core/ecs/Component.h"
+#include "core/ecs/System.h"
 
 class Scene {
 public:
-    Scene() {
-        static int nextId = 0;
-        id = nextId++;
+    Scene(const std::string& name = "") : name(name) {
+        scenes.push_back(this);
     }
     virtual ~Scene() {
         registry.ForEach([](Entity e) {
             registry.DestroyEntity(e);
         });
+
+        scenes.erase(std::remove(scenes.begin(), scenes.end(), this), scenes.end());
     }
 
     virtual void Create() {} // contains the setup of all entites, components and systems.
@@ -25,6 +27,9 @@ public:
     // otherwise, look for the first false value in the vector and set it to true
     Entity Instantiate() { 
         return registry.CreateEntity();
+    }
+    void AddSystem(ISystem* system, SystemType type) {
+        systems[static_cast<int>(type)].push_back(system);
     }
 
     template <typename T, typename... Args>
@@ -38,8 +43,8 @@ public:
     }
 
     template <typename T>
-    T& RemoveComponent(Entity e) {
-        return registry.RemoveComponent<T>(e);
+    void RemoveComponent(Entity e) {
+        registry.RemoveComponent<T>(e);
     }
 
     void Destroy(Entity e) {
@@ -47,7 +52,9 @@ public:
     }
 
 private:
-    int id;
     std::string name; // for referencing purposes, not as the unique identifier
-    static Registry registry; // for shared entities across scenes (aka DontDestroyOnLoad from unity)
+    std::vector<ISystem*> systems[SystemTypeCount];
+
+    inline static Registry registry; // for shared entities across scenes (aka DontDestroyOnLoad from unity)
+    inline static std::vector<Scene*> scenes;
 };

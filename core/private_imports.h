@@ -1,5 +1,8 @@
 #pragma once
 
+// Internal libraries
+#include "enums.h"
+
 // External libraries
 #define GLFW_INCLUDE_NONE
 #include <glad/gl.h>
@@ -16,6 +19,7 @@
 #include <memory>
 #include <queue>
 #include <unordered_map>
+#include <functional>
 
 // Bitwise manipulation libraries
 #include <cstdint>

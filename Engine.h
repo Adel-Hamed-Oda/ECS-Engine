@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/window/Window.h"
+#include "core/scenes/Scene.h"
 
 class Engine {
 public:
