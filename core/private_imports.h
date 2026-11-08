@@ -1,8 +1,5 @@
 #pragma once
 
-// Internal libraries
-#include "enums.h"
-
 // External libraries
 #define GLFW_INCLUDE_NONE
 #include <glad/gl.h>
@@ -25,7 +22,7 @@
 #include <cstdint>
 #include <bitset>
 
-// Threaing libraries
+// Threaing and time libraries
 #include <mutex>
 #include <chrono>
 #include <thread>

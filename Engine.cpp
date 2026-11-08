@@ -47,27 +47,16 @@ void Engine::MainLoop()
             }
             else
             {
-                Scene* currentScene = Scene::GetCurrentScene();
-                if (currentScene != nullptr)
-                {
-                    if (!currentScene->IsStarted()) {
-                        currentScene->Start();
-                    } else {
-                        currentScene->Update();
-                    }
-
-                    glClearColor(
-                        0.0f,
-                        0.0f,
-                        0.0f,
-                        1.0f
-                    );
-                    glClear(
-                        GL_COLOR_BUFFER_BIT |
-                        GL_DEPTH_BUFFER_BIT
-                    );
-                    currentScene->Render();
-                }
+                glClearColor(
+                    0.0f,
+                    0.0f,
+                    1.0f,
+                    1.0f
+                );
+                glClear(
+                    GL_COLOR_BUFFER_BIT |
+                    GL_DEPTH_BUFFER_BIT
+                );
 
                 primary->SwapBuffers();
             }

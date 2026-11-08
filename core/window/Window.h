@@ -6,6 +6,7 @@
 
 // Forward declaration of GLFWwindow to avoid exposing GLFW headers to users
 struct GLFWwindow;
+class Scene;
 
 class Window
 {
@@ -35,7 +36,11 @@ public:
 
     void MakeContextCurrent();
     void SwapBuffers();
+
+    // Danger, this function bites
     GLFWwindow* GetGLFWWindow() const;
+    Scene* GetScene() const;
+    void SetScene(Scene* scene);
 
 private:
     static std::vector<Window*> AllWindows;
@@ -43,6 +48,7 @@ private:
 
     int id = 0;
     GLFWwindow* m_window = nullptr;
+    Scene* m_scene = nullptr;
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 };

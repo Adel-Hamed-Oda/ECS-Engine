@@ -5,7 +5,6 @@
 #include <memory>
 #include <algorithm>
 
-#include "core/enums.h"
 #include "core/ecs/Registry.h"
 #include "core/ecs/Component.h"
 #include "core/ecs/System.h"
@@ -20,11 +19,6 @@ public:
     void Start();
     void Update();
     void Render();
-
-    static Scene* GetCurrentScene() { return currentScene; }
-    bool IsStarted() const { return isStarted; }
-    void ChangeScene(Scene* newScene);
-    void ChangeScene(const std::string& sceneName);
 
     Entity Instantiate();
     void DeleteSystem(ISystem* system);
@@ -56,9 +50,12 @@ public:
 private:
     std::string name;
     std::vector<std::unique_ptr<ISystem>> systems[SystemTypeCount];
-    bool isStarted = false;
+    Registry registry;
 
-    static Registry registry;
+    // flags to track the state of the scene
+    bool isStarted = false;
+    bool isLoaded = false;
+    bool active = false;
+
     static std::vector<Scene*> scenes;
-    static Scene* currentScene;
 };

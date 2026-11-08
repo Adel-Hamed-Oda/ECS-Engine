@@ -47,6 +47,12 @@ public:
 
         aliveEntities.erase(std::remove(aliveEntities.begin(), aliveEntities.end(), e), aliveEntities.end());
     }
+    void DestroyAllEntities() {
+        for (Entity e : aliveEntities) {
+            DestroyEntity(e);
+        }
+        aliveEntities.clear();
+    }
 
     bool IsAlive(Entity e) const {
         uint32_t index = GetEntityIndex(e);
