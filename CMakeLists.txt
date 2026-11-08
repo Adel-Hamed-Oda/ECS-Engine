@@ -23,6 +23,8 @@ add_subdirectory(external/freetype)
 
 add_library(Engine STATIC
     "Engine.cpp"
+    "core/window/Window.cpp"
+    "core/scenes/Scene.cpp"
     "external/implementations/glad.cpp"
 )
 
