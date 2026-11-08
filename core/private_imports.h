@@ -16,7 +16,9 @@
 #include <memory>
 #include <queue>
 #include <unordered_map>
+#include <unordered_set>
 #include <functional>
+#include <type_traits>
 
 // Bitwise manipulation libraries
 #include <cstdint>

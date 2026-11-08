@@ -48,10 +48,9 @@ public:
         aliveEntities.erase(std::remove(aliveEntities.begin(), aliveEntities.end(), e), aliveEntities.end());
     }
     void DestroyAllEntities() {
-        for (Entity e : aliveEntities) {
-            DestroyEntity(e);
+        while (!aliveEntities.empty()) {
+            DestroyEntity(aliveEntities.back());
         }
-        aliveEntities.clear();
     }
 
     bool IsAlive(Entity e) const {
@@ -100,8 +99,16 @@ public:
     void ForEach(Func&& func) {
         ComponentSignature mask;
         (mask.set(GetComponentTypeID<Comps>()), ...);
-        
-        ForEach(std::forward<Func>(func), mask);
+
+        for (Entity e : aliveEntities) {
+            if ((signatures[GetEntityIndex(e)] & mask) == mask) {
+                if constexpr (std::is_invocable_v<Func, Entity, Comps&...>) {
+                    func(e, GetComponent<Comps>(e)...);
+                } else {
+                    func(e);
+                }
+            }
+        }
     }
 
 private:

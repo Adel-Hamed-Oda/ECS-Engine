@@ -1,55 +1,84 @@
 #include "core/scenes/Scene.h"
+#include "core/window/Window.h"
 #include "core/private_imports.h"
 
 std::vector<Scene*> Scene::scenes;
+
+Scene* Scene::Get(const std::string& name) {
+    for (Scene* scene : scenes) {
+        if (scene && scene->name == name) return scene;
+    }
+    return nullptr;
+}
+const std::vector<Scene*>& Scene::GetAllScenes() {
+    return scenes;
+}
 
 Scene::Scene(const std::string& name) : name(name) {
     scenes.push_back(this);
 }
 
 Scene::~Scene() {
+    // Detach this scene from any window currently pointing to it
+    for (Window* win : Window::GetAllWindows()) {
+        if (win && win->GetScene() == this) {
+            win->SetScene(nullptr);
+        }
+    }
+
     registry.DestroyAllEntities();
 
     scenes.erase(std::remove(scenes.begin(), scenes.end(), this), scenes.end());
 }
 
-void Scene::Load() {}
-void Scene::Unload() {}
-
-void Scene::Start() {
-    if (isStarted) return;
-
-    for (auto& system : systems[static_cast<int>(SystemType::Start)]) {
-        system->apply(registry);
+void Scene::_Load() {
+    if (state == SceneState::Unloaded) {
+        Load();
+        state = SceneState::Loaded;
     }
+}
+void Scene::Load() {
+    // User-defined loading logic goes here
+}
 
-    isStarted = true;
+void Scene::_Unload() {
+    Unload();
+    registry.DestroyAllEntities();
+    for (auto& systemList : systems) {
+        systemList.clear();
+    }
+    state = SceneState::Unloaded;
+}
+void Scene::Unload() {
+    // User-defined unloading logic goes here
 }
 
 void Scene::Update() {
+    // If the scene is already active, just apply the update systems
+    // otherwise the start systems will be applied first, and then the update systems
+    if (state == SceneState::Active) {
+        for (auto& system : systems[static_cast<int>(SystemType::Update)]) {
+            system->apply(registry);
+        }
+        return;
+    }
     for (auto& system : systems[static_cast<int>(SystemType::Update)]) {
         system->apply(registry);
     }
+    state = SceneState::Active;
 }
 
-void Scene::Render() {}
-
-Entity Scene::Instantiate() { 
-    return registry.CreateEntity();
+void Scene::Render() {
+    // To be done later ISA
 }
 
-void Scene::DeleteSystem(ISystem* system) {
-    for (auto& systemList : systems) {
-        systemList.erase(
-            std::remove_if(systemList.begin(), systemList.end(),
-                [system](const std::unique_ptr<ISystem>& ptr) {
-                    return ptr.get() == system;
-                }), 
-            systemList.end()
-        );
-    }
+const std::string& Scene::GetName() const {
+    return name;
+}
+const SceneState Scene::GetState() const {
+    return state;
 }
 
-void Scene::Destroy(Entity e) {
-    registry.DestroyEntity(e);
+Registry& Scene::GetRegistry() {
+    return registry;
 }

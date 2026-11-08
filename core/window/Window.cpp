@@ -1,4 +1,5 @@
 #include "core/window/Window.h"
+#include "Engine.h"
 #include "core/private_imports.h"
 
 std::vector<Window*> Window::AllWindows;
@@ -15,15 +16,34 @@ Window* Window::Get(int id) {
     return nullptr;
 }
 
-Window::Window(const char* title, glm::ivec2 position, glm::ivec2 size) {
+const std::vector<Window*>& Window::GetAllWindows() {
+    return AllWindows;
+}
+
+Window::Window(const char* title, glm::ivec2 position, glm::ivec2 size, Window* shareWindow) {
+    Engine::init();
+
     id = nextId++;
 
-    m_window = glfwCreateWindow(size.x, size.y, title, nullptr, nullptr);
+    // Share OpenGL resources (textures, buffers, shaders) across windows
+    GLFWwindow* shareContext = nullptr;
+    if (shareWindow && shareWindow->m_window) {
+        shareContext = shareWindow->m_window;
+    } else if (!AllWindows.empty() && AllWindows[0]->m_window) {
+        shareContext = AllWindows[0]->m_window;
+    }
+
+    m_window = glfwCreateWindow(size.x, size.y, title, nullptr, shareContext);
     if (m_window) {
         glfwSetWindowPos(m_window, position.x, position.y);
         AllWindows.push_back(this);
-        SetAsPrimaryWindow();
+
+        glfwMakeContextCurrent(m_window);
+        glfwSwapInterval(1);
         gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+        if (glad_glClearColor) {
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        }
         glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
     } else {
         std::cerr << "Failed to create GLFW window: " << title << std::endl;
@@ -31,10 +51,17 @@ Window::Window(const char* title, glm::ivec2 position, glm::ivec2 size) {
 }
 
 Window::~Window() {
+    Close();
+}
+
+void Window::Close() {
     auto it = std::remove(AllWindows.begin(), AllWindows.end(), this);
     AllWindows.erase(it, AllWindows.end());
 
     if (m_window) {
+        if (glfwGetCurrentContext() == m_window) {
+            glfwMakeContextCurrent(nullptr);
+        }
         glfwDestroyWindow(m_window);
         m_window = nullptr;
     }
@@ -42,6 +69,10 @@ Window::~Window() {
     if (!AllWindows.empty() && AllWindows[0]->m_window) {
         glfwMakeContextCurrent(AllWindows[0]->m_window);
     }
+}
+
+bool Window::IsOpen() const {
+    return m_window != nullptr;
 }
 
 int Window::GetId() const {
@@ -63,6 +94,13 @@ glm::ivec2 Window::GetSize() const {
     if (!m_window) return glm::ivec2(0, 0);
     int width, height;
     glfwGetWindowSize(m_window, &width, &height);
+    return glm::ivec2(width, height);
+}
+
+glm::ivec2 Window::GetFramebufferSize() const {
+    if (!m_window) return glm::ivec2(0, 0);
+    int width, height;
+    glfwGetFramebufferSize(m_window, &width, &height);
     return glm::ivec2(width, height);
 }
 
@@ -113,6 +151,37 @@ GLFWwindow* Window::GetGLFWWindow() const {
     return m_window;
 }
 
+Scene* Window::GetScene() const {
+    return m_scene;
+}
+
+void Window::SetScene(Scene* scene) {
+    m_scene = scene;
+}
+
+void Window::SetScene(const std::string& sceneName) {
+    m_scene = Scene::Get(sceneName);
+}
+
+Entity Window::GetCamera() const {
+    return m_assignedCamera;
+}
+
+void Window::SetCamera(Entity camera) {
+    m_assignedCamera = camera;
+}
+
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    if (glad_glViewport) glViewport(0, 0, width, height);
+    if (!glad_glViewport || width <= 0 || height <= 0) return;
+
+    GLFWwindow* previousContext = glfwGetCurrentContext();
+    if (previousContext != window) {
+        glfwMakeContextCurrent(window);
+    }
+
+    glViewport(0, 0, width, height);
+
+    if (previousContext != window) {
+        glfwMakeContextCurrent(previousContext);
+    }
 }
