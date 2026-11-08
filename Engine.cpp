@@ -190,7 +190,7 @@ void Engine::MainLoop() {
         }
 
         // 1. UPDATE PHASE: Update each unique active scene once per frame
-        UpdateScenes(deltaTime);
+        UpdateScenes();
         if (terminated) break;
 
         // 2. RENDER PHASE: Render each window's target scene with its viewport & camera
