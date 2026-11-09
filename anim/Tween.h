@@ -1,0 +1,143 @@
+#pragma once
+
+#include "core/global/EngineTime.h"
+#include "core/private_imports.h"
+
+class Tween
+{
+    friend class Engine;
+
+public:
+    inline static std::vector<Tween*> activeTweens;
+
+    // Works for int, short, float, double, and glm vectors as far as I can tell.
+    template <typename T>
+    Tween(
+        T* value,
+        const T& start,
+        const T& end,
+        float duration,
+        std::function<void()> onComplete = nullptr,
+        std::function<float(float)> easingFunction = nullptr
+    )
+        : duration(duration),
+          easingFunction(std::move(easingFunction)),
+          onComplete(std::move(onComplete)),
+          apply([value, start, end](float t)
+          {
+              *value = Lerp<T>(start, end, t);
+          })
+    {
+        activeTweens.push_back(this);
+    }
+
+    ~Tween()
+    {
+        activeTweens.erase(
+            std::remove(activeTweens.begin(), activeTweens.end(), this),
+            activeTweens.end()
+        );
+    }
+
+    bool Finished() const
+    {
+        return elapsedTime >= duration;
+    }
+
+private:
+    float elapsedTime = 0.0f;
+    float duration = 0.0f;
+
+    std::function<void(float)> apply;
+    std::function<float(float)> easingFunction;
+    std::function<void()> onComplete;
+
+    template <typename T>
+    static T Lerp(const T& a, const T& b, float t)
+    {
+        if constexpr (std::is_arithmetic_v<T>)
+        {
+            using Real = std::conditional_t<std::is_floating_point_v<T>, T, double>;
+
+            Real ra = static_cast<Real>(a);
+            Real rb = static_cast<Real>(b);
+            Real r = ra + (rb - ra) * static_cast<Real>(t);
+
+            if constexpr (std::is_floating_point_v<T>)
+            {
+                return r;
+            }
+            else
+            {
+                return static_cast<T>(std::round(r));
+            }
+        }
+        else
+        {
+            using Scalar = typename T::value_type;
+            using Real = std::conditional_t<std::is_floating_point_v<Scalar>, Scalar, double>;
+            using RealVec = glm::vec<T::length(), Real, glm::defaultp>;
+
+            RealVec ra(a);
+            RealVec rb(b);
+            RealVec r = ra + (rb - ra) * static_cast<Real>(t);
+
+            if constexpr (std::is_floating_point_v<Scalar>)
+            {
+                return T(r);
+            }
+            else
+            {
+                return T(glm::round(r));
+            }
+        }
+    }
+
+        static void ClearAll()
+    {
+        auto copy = activeTweens;
+        activeTweens.clear();
+        for (Tween* t : copy)
+        {
+            delete t;
+        }
+    }
+
+    static void UpdateAll()
+    {
+        for (size_t i = 0; i < activeTweens.size(); )
+        {
+            Tween* tween = activeTweens[i];
+
+            tween->elapsedTime += Time::deltaTime;
+            tween->apply(tween->GetT());
+
+            if (tween->Finished())
+            {
+                auto callback = tween->onComplete;
+                delete tween;
+
+                if (callback)
+                {
+                    callback();
+                }
+            }
+            else
+            {
+                ++i;
+            }
+        }
+    }
+
+    float GetT() const
+    {
+        float t = duration > 0.0f ? std::clamp(elapsedTime / duration, 0.0f, 1.0f) : 1.0f;
+
+        if (easingFunction)
+        {
+            return easingFunction(t);
+        }
+
+        return t;
+    }
+};

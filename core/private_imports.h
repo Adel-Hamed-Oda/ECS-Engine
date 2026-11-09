@@ -19,6 +19,7 @@
 #include <unordered_set>
 #include <functional>
 #include <type_traits>
+#include <cmath>
 
 // Bitwise manipulation libraries
 #include <cstdint>
