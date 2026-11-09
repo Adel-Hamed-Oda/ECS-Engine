@@ -59,24 +59,6 @@ void Engine::terminate() {
     }
 }
 
-void Engine::SetWindowScene(Window* window, Scene* scene) {
-    if (window) {
-        window->SetScene(scene);
-    }
-}
-
-void Engine::SetWindowScene(int windowId, Scene* scene) {
-    if (Window* window = Window::Get(windowId)) {
-        window->SetScene(scene);
-    }
-}
-
-void Engine::SetWindowScene(int windowId, const std::string& sceneName) {
-    if (Window* window = Window::Get(windowId)) {
-        window->SetScene(Scene::Get(sceneName));
-    }
-}
-
 void Engine::SetupEngine() {
     terminated = false;
     init();

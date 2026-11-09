@@ -15,10 +15,6 @@ public:
     static void run();
     static void terminate();
 
-    static void SetWindowScene(Window* window, Scene* scene);
-    static void SetWindowScene(int windowId, Scene* scene);
-    static void SetWindowScene(int windowId, const std::string& sceneName);
-
 private:
     inline static bool initialized = false;
     inline static bool terminated = false;
