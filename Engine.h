@@ -5,6 +5,10 @@
 #include "core/scenes/Scene.h"
 #include "core/global/EngineTime.h"
 
+#include "anim/Event.h"
+#include "anim/Timer.h"
+#include "anim/Tween.h"
+
 class Engine {
 public:
     static void init();

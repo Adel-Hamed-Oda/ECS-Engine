@@ -14,12 +14,12 @@ void Engine::init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    initialized = true;
-    terminated = false;
-
     if (glfwGetCurrentContext() != nullptr) {
         gladLoadGL((GLADloadfunc)glfwGetProcAddress);
     }
+
+    initialized = true;
+    terminated = false;
 }
 
 void Engine::run() {
@@ -50,6 +50,9 @@ void Engine::terminate() {
                 win->Close();
             }
         }
+
+        Timer::ClearAll();
+        Tween::ClearAll();
 
         glfwTerminate();
         initialized = false;
@@ -188,11 +191,14 @@ void Engine::MainLoop() {
             }
         }
 
-        // 1. UPDATE PHASE: Update each unique active scene once per frame
+        // 1. UPDATE PHASE
+        Timer::UpdateAll();
+        Tween::UpdateAll();
         UpdateScenes();
+
         if (terminated) break;
 
-        // 2. RENDER PHASE: Render each window's target scene with its viewport & camera
+        // 2. RENDER PHASE
         RenderWindows();
     }
 
