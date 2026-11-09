@@ -55,6 +55,8 @@ Window::~Window() {
 }
 
 void Window::Close() {
+    onWindowClose.Invoke();
+
     auto it = std::remove(AllWindows.begin(), AllWindows.end(), this);
     AllWindows.erase(it, AllWindows.end());
 
@@ -145,10 +147,6 @@ void Window::MakeContextCurrent() {
 
 void Window::SwapBuffers() {
     if (m_window) glfwSwapBuffers(m_window);
-}
-
-GLFWwindow* Window::GetGLFWWindow() const {
-    return m_window;
 }
 
 Scene* Window::GetScene() const {
