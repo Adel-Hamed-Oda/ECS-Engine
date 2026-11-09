@@ -31,26 +31,22 @@ Scene::~Scene() {
     scenes.erase(std::remove(scenes.begin(), scenes.end(), this), scenes.end());
 }
 
-void Scene::_Load() {
+void Scene::Load() {
     if (state == SceneState::Unloaded) {
-        Load();
+        onLoad.Invoke();
         state = SceneState::Loaded;
     }
 }
-void Scene::Load() {
-    // User-defined loading logic goes here
-}
 
-void Scene::_Unload() {
-    Unload();
+void Scene::Unload() {
+    if (state == SceneState::Unloaded) return;
+
+    onUnload.Invoke();
     registry.DestroyAllEntities();
     for (auto& systemList : systems) {
         systemList.clear();
     }
     state = SceneState::Unloaded;
-}
-void Scene::Unload() {
-    // User-defined unloading logic goes here
 }
 
 void Scene::Update() {

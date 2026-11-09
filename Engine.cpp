@@ -30,7 +30,7 @@ void Engine::run() {
 }
 
 void Engine::terminate() {
-    if (terminated && !initialized) return;
+    if (terminated || !initialized) return;
 
     terminated = true;
 
@@ -39,14 +39,14 @@ void Engine::terminate() {
         std::vector<Scene*> allScenes = Scene::GetAllScenes();
         for (Scene* scene : allScenes) {
             if (scene && scene->GetState() != SceneState::Unloaded) {
-                scene->_Unload();
+                scene->Unload();
             }
         }
 
         // Close all open GLFW windows before terminating GLFW
         std::vector<Window*> openWindows = Window::GetAllWindows();
         for (Window* win : openWindows) {
-            if (win) {
+            if (win && win->IsOpen()) {
                 win->Close();
             }
         }
@@ -100,7 +100,7 @@ void Engine::UpdateScenes() {
     for (Scene* scene : scenesToUpdate) {
         if (terminated) break;
         if (scene->GetState() == SceneState::Unloaded) {
-            scene->_Load();
+            scene->Load();
         }
         scene->Update();
     }
@@ -136,7 +136,7 @@ void Engine::RenderWindows() {
 
         if (Scene* targetScene = win->GetScene()) {
             if (targetScene->GetState() == SceneState::Unloaded) {
-                targetScene->_Load();
+                targetScene->Load();
             }
             targetScene->Render();
         }
@@ -171,6 +171,11 @@ void Engine::MainLoop() {
             if (win && win->GLWindowShouldClose()) {
                 win->Close();
             }
+        }
+
+        // If open windows were present and all have now closed, cleanly exit the loop
+        if (!currentWindows.empty() && Window::GetAllWindows().empty()) {
+            break;
         }
 
         // 1. UPDATE PHASE

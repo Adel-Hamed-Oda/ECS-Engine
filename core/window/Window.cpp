@@ -55,18 +55,20 @@ Window::~Window() {
 }
 
 void Window::Close() {
-    onWindowClose.Invoke();
+    if (!m_window) return;
 
     auto it = std::remove(AllWindows.begin(), AllWindows.end(), this);
     AllWindows.erase(it, AllWindows.end());
 
-    if (m_window) {
-        if (glfwGetCurrentContext() == m_window) {
-            glfwMakeContextCurrent(nullptr);
-        }
-        glfwDestroyWindow(m_window);
-        m_window = nullptr;
+    GLFWwindow* windowToDestroy = m_window;
+    m_window = nullptr;
+
+    onWindowClose.Invoke();
+
+    if (glfwGetCurrentContext() == windowToDestroy) {
+        glfwMakeContextCurrent(nullptr);
     }
+    glfwDestroyWindow(windowToDestroy);
 
     if (!AllWindows.empty() && AllWindows[0]->m_window) {
         glfwMakeContextCurrent(AllWindows[0]->m_window);

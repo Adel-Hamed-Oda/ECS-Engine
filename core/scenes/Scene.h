@@ -8,6 +8,7 @@
 #include "core/ecs/Registry.h"
 #include "core/ecs/Component.h"
 #include "core/ecs/System.h"
+#include "core/events/Event.h"
 
 // Defines the current state of the scene
 // - Unloaded: The scene is not loaded and has no active entities or systems.
@@ -21,17 +22,17 @@ enum class SceneState {
 
 class Scene {
 public:
+    Event<Scene> onLoad;
+    Event<Scene> onUnload;
+
     static Scene* Get(const std::string& name);
     static const std::vector<Scene*>& GetAllScenes();
 
     Scene(const std::string& name = "");
     virtual ~Scene();
 
-    // the _ is for internal functions that shouldn't be altered by the user
-    void _Load();
-    virtual void Load();
-    void _Unload();
-    virtual void Unload();
+    void Load();
+    void Unload();
 
     void Update();
     void Render();

@@ -13,12 +13,12 @@ class Scene;
 
 class Window
 {
-    friend class Engine; // Engine needs to access private members for context management
+    friend class Engine;
 
 public:
     Event<Window> onWindowClose;
 
-    static Window* GetPrimaryWindow();
+    static Window* GetPrimaryWindow(); // used to ensure scenes don't load on empty contexts
     static Window* Get(int id);
     static const std::vector<Window*>& GetAllWindows();
 
