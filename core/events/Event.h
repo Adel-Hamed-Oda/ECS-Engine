@@ -2,41 +2,24 @@
 
 #include "core/private_imports.h"
 
-template <typename... Args>
-struct Event
+// Notice the new 'Owner' template parameter
+template <typename Owner, typename... Args>
+class Event
 {
-    using Callback = std::function<void(Args...)>; // bro wtf is this syntax
     // I have to rant about this, in C# you don't need all this shit, you literally put <T>
     // next to any function, class, etc. and then you just use them.
     //
     // HELL, you can even do something like "T where T : ISomeInterface" it's insane
-    // also wtf are "friend class" bruh.
+    // also wtf are "friend class" bruh, wdym that I can just say "oh hey, this specific class can
+    // access my private stuff" (I would like to change the name to "spouse" but that's besides the point,
+    // you can even do "polygamy" and say "I am married to multiple classes" lol)
+    friend Owner;
 
-    std::vector<Callback> listeners;
+public:
+    using Callback = std::function<void(Args...)>;
 
     Event() = default;
-    Event(std::nullptr_t) {}
-
-    Event(Callback callback)
-    {
-        if (callback)
-            listeners.push_back(std::move(callback));
-    }
-
-    Event& operator=(std::nullptr_t)
-    {
-        listeners.clear();
-        return *this;
-    }
-
-    Event& operator=(Callback callback)
-    {
-        listeners.clear();
-        if (callback)
-            listeners.push_back(std::move(callback));
-        return *this;
-    }
-
+    
     Event& operator+=(Callback callback)
     {
         if (callback)
@@ -76,6 +59,36 @@ struct Event
         }
     }
 
+    explicit operator bool() const
+    {
+        return !listeners.empty();
+    }
+
+private:
+    std::vector<Callback> listeners;
+
+    Event(std::nullptr_t) {}
+    
+    Event(Callback callback)
+    {
+        if (callback)
+            listeners.push_back(std::move(callback));
+    }
+
+    Event& operator=(std::nullptr_t)
+    {
+        listeners.clear();
+        return *this;
+    }
+
+    Event& operator=(Callback callback)
+    {
+        listeners.clear();
+        if (callback)
+            listeners.push_back(std::move(callback));
+        return *this;
+    }
+
     void Clear()
     {
         listeners.clear();
@@ -95,14 +108,4 @@ struct Event
     {
         Invoke(args...);
     }
-
-    explicit operator bool() const
-    {
-        return !listeners.empty();
-    }
 };
-
-Event() -> Event<>;
-Event(std::nullptr_t) -> Event<>;
-template <typename... Args>
-Event(std::function<void(Args...)>) -> Event<Args...>;
