@@ -35,7 +35,6 @@ public:
     void Unload();
 
     void Update();
-    void Render();
 
     const std::string& GetName() const;
     const SceneState GetState() const;

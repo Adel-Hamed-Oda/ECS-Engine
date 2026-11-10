@@ -1,9 +1,12 @@
 #include "Engine.h"
 
 #include "core/private_imports.h"
+#include "core/rendering/Renderer.h"
 
 void Engine::init() {
-    if (initialized) return;
+    if (active) {
+        return;
+    }
 
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -18,53 +21,49 @@ void Engine::init() {
         gladLoadGL((GLADloadfunc)glfwGetProcAddress);
     }
 
-    initialized = true;
-    terminated = false;
+    Renderer::SetupRendering();
+
+    active = true;
 }
 
 void Engine::run() {
-    SetupEngine();
-    if (!initialized) return;
+    if (!active) {
+        init();
+    }
+    if (!active) return;
 
     MainLoop();
 }
 
 void Engine::terminate() {
-    if (terminated || !initialized) return;
+    if (!active) return;
+    active = false;
 
-    terminated = true;
-
-    if (initialized) {
-        // Unload all loaded scenes while OpenGL contexts are still valid
-        std::vector<Scene*> allScenes = Scene::GetAllScenes();
-        for (Scene* scene : allScenes) {
-            if (scene && scene->GetState() != SceneState::Unloaded) {
-                scene->Unload();
-            }
+    // Unload all loaded scenes while OpenGL contexts are still valid
+    std::vector<Scene*> allScenes = Scene::GetAllScenes();
+    for (Scene* scene : allScenes) {
+        if (scene && scene->GetState() != SceneState::Unloaded) {
+            scene->Unload();
         }
-
-        // Close all open GLFW windows before terminating GLFW
-        std::vector<Window*> openWindows = Window::GetAllWindows();
-        for (Window* win : openWindows) {
-            if (win && win->IsOpen()) {
-                win->Close();
-            }
-        }
-
-        Timer::ClearAll();
-        Tween::ClearAll();
-
-        glfwTerminate();
-        initialized = false;
     }
-}
 
-void Engine::SetupEngine() {
-    terminated = false;
-    init();
+    // Close all open GLFW windows before terminating GLFW
+    std::vector<Window*> openWindows = Window::GetAllWindows();
+    for (Window* win : openWindows) {
+        if (win && win->IsOpen()) {
+            win->Close();
+        }
+    }
+
+    Timer::ClearAll();
+    Tween::ClearAll();
+
+    glfwTerminate();
 }
 
 void Engine::UpdateScenes() {
+    if (!active) return;
+
     const auto& windows = Window::GetAllWindows();
 
     // Collect unique target scenes across all open windows so a shared scene
@@ -98,21 +97,24 @@ void Engine::UpdateScenes() {
     }
 
     for (Scene* scene : scenesToUpdate) {
-        if (terminated) break;
+        if (!active) break;
         if (scene->GetState() == SceneState::Unloaded) {
             scene->Load();
+            if (!active) break;
         }
         scene->Update();
     }
 }
 
 void Engine::RenderWindows() {
+    if (!active) return;
+
     // Snapshot open windows in case callbacks close or open windows mid-frame
     std::vector<Window*> windows = Window::GetAllWindows();
     bool vsyncAppliedThisFrame = false;
 
     for (Window* win : windows) {
-        if (terminated) break;
+        if (!active) break;
         if (!win || !win->IsOpen()) continue;
 
         glm::ivec2 fbSize = win->GetFramebufferSize();
@@ -137,8 +139,9 @@ void Engine::RenderWindows() {
         if (Scene* targetScene = win->GetScene()) {
             if (targetScene->GetState() == SceneState::Unloaded) {
                 targetScene->Load();
+                if (!active) break;
             }
-            targetScene->Render();
+            Renderer::RenderScene(targetScene);
         }
 
         // Pace the frame on the first presented window so N windows don't divide FPS by N
@@ -151,7 +154,7 @@ void Engine::RenderWindows() {
 
     // Throttle CPU usage when running without windows or when all windows are minimized
     // to prevent crashes and excessive CPU usage.
-    if (!vsyncAppliedThisFrame && !terminated) {
+    if (!vsyncAppliedThisFrame && active) {
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 }
@@ -159,7 +162,7 @@ void Engine::RenderWindows() {
 void Engine::MainLoop() {
     double lastFrameTime = glfwGetTime();
 
-    while (!terminated) {
+    while (active) {
         double currentFrameTime = glfwGetTime();
         Time::Update(&lastFrameTime, currentFrameTime);
 
@@ -168,10 +171,13 @@ void Engine::MainLoop() {
         // Close any individual windows that requested to close
         std::vector<Window*> currentWindows = Window::GetAllWindows();
         for (Window* win : currentWindows) {
+            if (!active) break;
             if (win && win->GLWindowShouldClose()) {
                 win->Close();
             }
         }
+
+        if (!active) break;
 
         // If open windows were present and all have now closed, cleanly exit the loop
         if (!currentWindows.empty() && Window::GetAllWindows().empty()) {
@@ -183,7 +189,7 @@ void Engine::MainLoop() {
         Tween::UpdateAll();
         UpdateScenes();
 
-        if (terminated) break;
+        if (!active) break;
 
         // 2. RENDER PHASE
         RenderWindows();

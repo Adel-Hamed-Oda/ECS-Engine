@@ -64,10 +64,6 @@ void Scene::Update() {
     state = SceneState::Active;
 }
 
-void Scene::Render() {
-    // To be done later ISA
-}
-
 const std::string& Scene::GetName() const {
     return name;
 }
