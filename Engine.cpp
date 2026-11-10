@@ -141,7 +141,7 @@ void Engine::RenderWindows() {
                 targetScene->Load();
                 if (!active) break;
             }
-            Renderer::RenderScene(targetScene);
+            Renderer::RenderScene(targetScene, fbSize.x, fbSize.y, win->GetCamera());
         }
 
         // Pace the frame on the first presented window so N windows don't divide FPS by N

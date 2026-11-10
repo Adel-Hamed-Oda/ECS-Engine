@@ -4,6 +4,7 @@
 #include "Mesh.h"
 
 class Primitives {
+public:
     static std::unique_ptr<Mesh> CreateCube(
         glm::vec3 dimensions = glm::vec3(1.0f),
         glm::vec4 color = glm::vec4(1.0f)

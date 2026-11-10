@@ -7,6 +7,9 @@
 class Shader
 {
 public:
+    struct FromSourceTag {};
+    static inline constexpr FromSourceTag FromSource{};
+
     GLuint ID = 0;
 
     Shader() = default;
@@ -18,16 +21,31 @@ public:
     Shader(const std::string& vertexPath, const std::string& fragmentPath) {
         const std::string vertexCode = FileReader::ReadFile(vertexPath);
         const std::string fragmentCode = FileReader::ReadFile(fragmentPath);
-        Shader(vertexCode, fragmentCode);
+        InitFromSource(vertexCode, fragmentCode);
     }
 
-    Shader(const std::string& vertexCode, const std::string& fragmentCode) {
-        ID = BuildProgram(vertexCode, fragmentCode);
-        if (!IsValid())
-        {
-            std::cerr << "ERROR::SHADER::CREATION_FAILED: From source code" << std::endl;
-            ID = BuildProgram(FallBacks::VertexShaderCode, FallBacks::FragmentShaderCode);
+    Shader(FromSourceTag, const std::string& vertexCode, const std::string& fragmentCode) {
+        InitFromSource(vertexCode, fragmentCode);
+    }
+
+    static std::shared_ptr<Shader> CreateFromSource(const std::string& vertexCode, const std::string& fragmentCode) {
+        return std::make_shared<Shader>(FromSource, vertexCode, fragmentCode);
+    }
+
+    Shader(const Shader&) = delete;
+    Shader& operator=(const Shader&) = delete;
+
+    Shader(Shader&& other) noexcept : ID(other.ID) {
+        other.ID = 0;
+    }
+
+    Shader& operator=(Shader&& other) noexcept {
+        if (this != &other) {
+            if (ID != 0) glDeleteProgram(ID);
+            ID = other.ID;
+            other.ID = 0;
         }
+        return *this;
     }
 
     ~Shader() { if (ID != 0) glDeleteProgram(ID); }
@@ -79,7 +97,14 @@ public:
     }
 
 private:
-    struct FromSourceTag {};
+    void InitFromSource(const std::string& vertexCode, const std::string& fragmentCode) {
+        ID = BuildProgram(vertexCode, fragmentCode);
+        if (!IsValid())
+        {
+            std::cerr << "ERROR::SHADER::CREATION_FAILED: From source code" << std::endl;
+            ID = BuildProgram(FallBacks::VertexShaderCode, FallBacks::FragmentShaderCode);
+        }
+    }
 
     static GLuint BuildProgram(const std::string& vertexCode, const std::string& fragmentCode)
     {

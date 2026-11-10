@@ -2,13 +2,58 @@
 
 #include "core/private_imports.h"
 #include "core/rendering/mesh/Mesh.h"
+#include "core/rendering/shader/Shader.h"
 
 struct MeshRenderer
 {
 public:
     std::unique_ptr<Mesh> mesh;
+    std::shared_ptr<Shader> shader;
 
-    MeshRenderer(std::unique_ptr<Mesh> mesh) : mesh(std::move(mesh)) { InitializeBuffers(); }
+    MeshRenderer(std::unique_ptr<Mesh> mesh, std::shared_ptr<Shader> shader = nullptr)
+        : mesh(std::move(mesh)), shader(std::move(shader))
+    {
+        InitializeBuffers();
+    }
+
+    MeshRenderer(const MeshRenderer&) = delete;
+    MeshRenderer& operator=(const MeshRenderer&) = delete;
+
+    MeshRenderer(MeshRenderer&& other) noexcept
+        : mesh(std::move(other.mesh)),
+          shader(std::move(other.shader)),
+          VAO(other.VAO),
+          triangleEBO(other.triangleEBO),
+          posVBO(other.posVBO),
+          indicesCount(other.indicesCount)
+    {
+        other.VAO = 0;
+        other.triangleEBO = 0;
+        other.posVBO = 0;
+        other.indicesCount = 0;
+    }
+
+    MeshRenderer& operator=(MeshRenderer&& other) noexcept
+    {
+        if (this != &other)
+        {
+            CleanupBuffers();
+
+            mesh = std::move(other.mesh);
+            shader = std::move(other.shader);
+            VAO = other.VAO;
+            triangleEBO = other.triangleEBO;
+            posVBO = other.posVBO;
+            indicesCount = other.indicesCount;
+
+            other.VAO = 0;
+            other.triangleEBO = 0;
+            other.posVBO = 0;
+            other.indicesCount = 0;
+        }
+        return *this;
+    }
+
     ~MeshRenderer() { CleanupBuffers(); }
 
     void Draw() const

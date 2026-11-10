@@ -41,6 +41,7 @@ Window::Window(const char* title, glm::ivec2 position, glm::ivec2 size, Window* 
         glfwMakeContextCurrent(m_window);
         glfwSwapInterval(1);
         gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+        Renderer::SetupRendering();
         if (glad_glClearColor) {
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         }
