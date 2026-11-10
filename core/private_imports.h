@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 // Standard c++ libraries
 #include <iostream>
@@ -21,6 +22,8 @@
 #include <functional>
 #include <type_traits>
 #include <cmath>
+#include <fstream>
+#include <sstream>
 
 // Bitwise manipulation libraries
 #include <cstdint>
