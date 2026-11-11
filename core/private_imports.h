@@ -24,6 +24,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include <tuple>
 
 // Bitwise manipulation libraries
 #include <cstdint>

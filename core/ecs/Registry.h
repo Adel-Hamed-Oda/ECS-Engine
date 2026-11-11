@@ -97,13 +97,59 @@ public:
     // Same as previous, taking in individual component types
     template <typename... Comps, typename Func>
     void ForEach(Func&& func) {
+        if constexpr (sizeof...(Comps) == 0) {
+            for (Entity e : aliveEntities) {
+                func(e);
+            }
+        } else if constexpr (sizeof...(Comps) == 1) {
+            using CompT = std::tuple_element_t<0, std::tuple<Comps...>>;
+            ComponentPool<CompT>* pool = TryGetPool<CompT>();
+            if (!pool) return;
+
+            std::vector<CompT>& dense = pool->GetDenseArray();
+            const std::vector<Entity>& entities = pool->GetDenseEntities();
+            for (size_t i = 0; i < entities.size(); ++i) {
+                if constexpr (std::is_invocable_v<Func, Entity, CompT&>) {
+                    func(entities[i], dense[i]);
+                } else {
+                    func(entities[i]);
+                }
+            }
+        } else {
+            auto pools = std::make_tuple(TryGetPool<Comps>()...);
+            ForEachMulti(std::forward<Func>(func), pools, std::index_sequence_for<Comps...>{});
+        }
+    }
+
+private:
+    template <typename Func, typename... Comps, size_t... Is>
+    void ForEachMulti(Func&& func, const std::tuple<ComponentPool<Comps>*...>& pools, std::index_sequence<Is...>) {
+        const bool anyEmpty = ((std::get<Is>(pools) == nullptr || std::get<Is>(pools)->GetDenseEntities().empty()) || ...);
+        if (anyEmpty) return;
+
+        const std::vector<Entity>* smallestEntities = nullptr;
+        size_t minSize = SIZE_MAX;
+        (
+            [&]() {
+                const auto& ents = std::get<Is>(pools)->GetDenseEntities();
+                if (ents.size() < minSize) {
+                    minSize = ents.size();
+                    smallestEntities = &ents;
+                }
+            }(),
+            ...
+        );
+
         ComponentSignature mask;
         (mask.set(GetComponentTypeID<Comps>()), ...);
 
-        for (Entity e : aliveEntities) {
-            if ((signatures[GetEntityIndex(e)] & mask) == mask) {
+        const std::vector<Entity>& entities = *smallestEntities;
+        for (size_t i = 0; i < entities.size(); ++i) {
+            Entity e = entities[i];
+            uint32_t entityIndex = GetEntityIndex(e);
+            if ((signatures[entityIndex] & mask) == mask) {
                 if constexpr (std::is_invocable_v<Func, Entity, Comps&...>) {
-                    func(e, GetComponent<Comps>(e)...);
+                    func(e, std::get<Is>(pools)->GetDataByIndex(entityIndex)...);
                 } else {
                     func(e);
                 }
@@ -111,14 +157,27 @@ public:
         }
     }
 
-private:
     template <typename T>
-    std::shared_ptr<ComponentPool<T>> GetOrCreatePool() {
+    ComponentPool<T>* TryGetPool() const {
         ComponentTypeID id = GetComponentTypeID<T>();
-        if (!componentPools.contains(id)) {
-            componentPools[id] = std::make_shared<ComponentPool<T>>();
+        auto it = componentPools.find(id);
+        if (it == componentPools.end()) {
+            return nullptr;
         }
-        return std::static_pointer_cast<ComponentPool<T>>(componentPools[id]);
+        return static_cast<ComponentPool<T>*>(it->second.get());
+    }
+
+    template <typename T>
+    ComponentPool<T>* GetOrCreatePool() {
+        ComponentTypeID id = GetComponentTypeID<T>();
+        auto it = componentPools.find(id);
+        if (it == componentPools.end()) {
+            auto pool = std::make_shared<ComponentPool<T>>();
+            ComponentPool<T>* rawPtr = pool.get();
+            componentPools.emplace(id, std::move(pool));
+            return rawPtr;
+        }
+        return static_cast<ComponentPool<T>*>(it->second.get());
     }
 
     std::vector<uint32_t> generations;

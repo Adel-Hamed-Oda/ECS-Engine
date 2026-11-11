@@ -14,7 +14,9 @@ class ComponentPool : public IComponentArray {
 public:
     void InsertData(Entity e, T component) {
         uint32_t index = GetEntityIndex(e);
-        assert(index < sparse.size() || (sparse.resize(index + 1, -1), true));
+        if (index >= sparse.size()) {
+            sparse.resize(index + 1, -1);
+        }
 
         // Point sparse to the end of the dense array
         sparse[index] = static_cast<int32_t>(dense.size());
@@ -48,6 +50,11 @@ public:
     T& GetData(Entity entity) {
         assert(HasData(entity));
         return dense[sparse[GetEntityIndex(entity)]];
+    }
+
+    // Fast unchecked lookup by precomputed entity index (when signature has already been verified)
+    T& GetDataByIndex(uint32_t entityIndex) {
+        return dense[sparse[entityIndex]];
     }
 
     // checks if the given entity has a component of this type
