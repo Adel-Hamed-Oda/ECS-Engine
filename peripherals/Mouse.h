@@ -10,7 +10,8 @@ public:
     }
 
     static void SetCursorVisibility(bool visible) {
-    
+        if (!glfwGetCurrentContext()) return;
+        glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
     }
 
     static glm::vec2 GetPosition() {
