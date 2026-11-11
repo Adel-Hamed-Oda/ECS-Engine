@@ -1,6 +1,9 @@
 #pragma once
 
 #include "core/private_imports.h"
+#include "core/rendering/buffers/VAO.h"
+#include "core/rendering/buffers/VBO.h"
+#include "core/rendering/buffers/EBO.h"
 #include "core/rendering/mesh/Mesh.h"
 #include "core/rendering/shader/Shader.h"
 
@@ -22,14 +25,11 @@ public:
     MeshRenderer(MeshRenderer&& other) noexcept
         : mesh(std::move(other.mesh)),
           shader(std::move(other.shader)),
-          VAO(other.VAO),
-          triangleEBO(other.triangleEBO),
-          posVBO(other.posVBO),
+          vao(std::move(other.vao)),
+          posVBO(std::move(other.posVBO)),
+          triangleEBO(std::move(other.triangleEBO)),
           indicesCount(other.indicesCount)
     {
-        other.VAO = 0;
-        other.triangleEBO = 0;
-        other.posVBO = 0;
         other.indicesCount = 0;
     }
 
@@ -41,14 +41,11 @@ public:
 
             mesh = std::move(other.mesh);
             shader = std::move(other.shader);
-            VAO = other.VAO;
-            triangleEBO = other.triangleEBO;
-            posVBO = other.posVBO;
+            vao = std::move(other.vao);
+            posVBO = std::move(other.posVBO);
+            triangleEBO = std::move(other.triangleEBO);
             indicesCount = other.indicesCount;
 
-            other.VAO = 0;
-            other.triangleEBO = 0;
-            other.posVBO = 0;
             other.indicesCount = 0;
         }
         return *this;
@@ -58,9 +55,9 @@ public:
 
     void Draw() const
     {
-        if (VAO == 0) return;
+        if (!vao.IsValid()) return;
 
-        glBindVertexArray(VAO);
+        vao.Bind();
 
         glDrawElements(
             GL_TRIANGLES,
@@ -69,63 +66,47 @@ public:
             nullptr
         );
 
-        glBindVertexArray(0);
+        VAO::Unbind();
     }
 
 private:
-    unsigned int VAO = 0;
-    unsigned int triangleEBO = 0;
-
-    unsigned int posVBO = 0;
+    VAO vao;
+    VBO posVBO;
+    EBO triangleEBO;
 
     size_t indicesCount = 0;
 
     void InitializeBuffers()
     {
-        if (!CheckMeshValidity()) return;
+        if (!CheckMeshValidity())
+        {
+            CleanupBuffers();
+            return;
+        }
 
         indicesCount = mesh->triangles.size();
 
-        glGenBuffers(1, &posVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, posVBO);
-        glBufferData(GL_ARRAY_BUFFER, mesh->vertices.size() * sizeof(glm::vec3), mesh->vertices.data(), GL_STATIC_DRAW);
+        if (!vao.IsValid()) vao.Create();
+        vao.Bind();
 
-        glGenBuffers(1, &triangleEBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleEBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->triangles.size() * sizeof(unsigned int), mesh->triangles.data(), GL_STATIC_DRAW);
+        posVBO = VBO(mesh->vertices);
+        vao.LinkAttrib(posVBO, 0, 3, GL_FLOAT, sizeof(glm::vec3), nullptr);
 
-        glGenVertexArrays(1, &VAO);
-        glBindVertexArray(VAO);
+        triangleEBO = EBO(mesh->triangles);
+        vao.LinkEBO(triangleEBO);
 
-        glBindBuffer(GL_ARRAY_BUFFER, posVBO);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleEBO);
-        glBindVertexArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Unbind VAO before unbinding EBO so the VAO preserves its EBO binding
+        VAO::Unbind();
+        VBO::Unbind();
+        EBO::Unbind();
     }
 
     void CleanupBuffers()
     {
-        if (triangleEBO != 0)
-        {
-            glDeleteBuffers(1, &triangleEBO);
-            triangleEBO = 0;
-        }
-
-        if (posVBO != 0)
-        {
-            glDeleteBuffers(1, &posVBO);
-            posVBO = 0;
-        }
-
-        if (VAO != 0)
-        {
-            glDeleteVertexArrays(1, &VAO);
-            VAO = 0;
-        }
+        triangleEBO.Delete();
+        posVBO.Delete();
+        vao.Delete();
+        indicesCount = 0;
     }
 
     bool CheckMeshValidity() const
