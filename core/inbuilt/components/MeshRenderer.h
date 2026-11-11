@@ -28,6 +28,9 @@ public:
           vao(std::move(other.vao)),
           posVBO(std::move(other.posVBO)),
           triangleEBO(std::move(other.triangleEBO)),
+          normalVBO(std::move(other.normalVBO)),
+          colorVBO(std::move(other.colorVBO)),
+          uvVBO(std::move(other.uvVBO)),
           indicesCount(other.indicesCount)
     {
         other.indicesCount = 0;
@@ -44,6 +47,9 @@ public:
             vao = std::move(other.vao);
             posVBO = std::move(other.posVBO);
             triangleEBO = std::move(other.triangleEBO);
+            normalVBO = std::move(other.normalVBO);
+            colorVBO = std::move(other.colorVBO);
+            uvVBO = std::move(other.uvVBO);
             indicesCount = other.indicesCount;
 
             other.indicesCount = 0;
@@ -73,6 +79,9 @@ private:
     VAO vao;
     VBO posVBO;
     EBO triangleEBO;
+    VBO normalVBO;
+    VBO colorVBO;
+    VBO uvVBO;
 
     size_t indicesCount = 0;
 
@@ -90,10 +99,19 @@ private:
         vao.Bind();
 
         posVBO = VBO(mesh->vertices);
-        vao.LinkAttrib(posVBO, 0, 3, GL_FLOAT, sizeof(glm::vec3), nullptr);
+        vao.LinkAttrib(posVBO, 0, 3, GL_FLOAT, sizeof(glm::vec3), nullptr); 
 
         triangleEBO = EBO(mesh->triangles);
         vao.LinkEBO(triangleEBO);
+
+        normalVBO = VBO(mesh->normals);
+        vao.LinkAttrib(normalVBO, 1, 3, GL_FLOAT, sizeof(glm::vec3), nullptr);
+
+        colorVBO = VBO(mesh->colors);
+        vao.LinkAttrib(colorVBO, 2, 4, GL_FLOAT, sizeof(glm::vec4), nullptr);
+
+        uvVBO = VBO(mesh->uvs);
+        vao.LinkAttrib(uvVBO, 3, 2, GL_FLOAT, sizeof(glm::vec2), nullptr);
 
         // Unbind VAO before unbinding EBO so the VAO preserves its EBO binding
         VAO::Unbind();
@@ -104,6 +122,9 @@ private:
     void CleanupBuffers()
     {
         triangleEBO.Delete();
+        normalVBO.Delete();
+        colorVBO.Delete();
+        uvVBO.Delete();
         posVBO.Delete();
         vao.Delete();
         indicesCount = 0;
