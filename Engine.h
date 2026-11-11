@@ -3,6 +3,8 @@
 #include "core/window/Window.h"
 #include "core/scenes/Scene.h"
 #include "core/global/EngineTime.h"
+#include "core/global/Input.h"
+#include "core/global/KeyCode.h"
 
 #include "core/events/Action.h"
 #include "core/events/Event.h"

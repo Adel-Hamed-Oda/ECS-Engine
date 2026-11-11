@@ -27,14 +27,9 @@ public:
         if (!transform) return glm::mat4(1.0f);
 
         glm::vec3 pos = transform->GetWorldPosition();
-        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 invRotation = glm::transpose(transform->GetRotationMatrix());
 
-        view = glm::rotate(view, glm::radians(-transform->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-        view = glm::rotate(view, glm::radians(-transform->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = glm::rotate(view, glm::radians(-transform->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-        view = glm::translate(view, -pos);
-
-        return view;
+        return glm::translate(invRotation, -pos);
     }
 
     glm::mat4 GetViewMatrix(const Transform& transform) const

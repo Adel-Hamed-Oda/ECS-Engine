@@ -27,16 +27,19 @@ public:
     {
         glm::mat4 rotationMatrix(1.0f);
 
-        rotationMatrix = glm::rotate(
-            rotationMatrix,
-            glm::radians(rotation.x),
-            glm::vec3(1.0f, 0.0f, 0.0f)
-        );
-
+        // Apply Yaw (Y) -> Pitch (X) -> Roll (Z) so local X pitch stays level relative to the horizon
+        // otherwise there are issues that will happen with the camera (the issue is called "gimbal locks"
+        // and the only solution is using Quaternions, which I am NOT that much of a masochist to do)
         rotationMatrix = glm::rotate(
             rotationMatrix,
             glm::radians(rotation.y),
             glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+
+        rotationMatrix = glm::rotate(
+            rotationMatrix,
+            glm::radians(rotation.x),
+            glm::vec3(1.0f, 0.0f, 0.0f)
         );
         
         rotationMatrix = glm::rotate(
