@@ -41,4 +41,5 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(Engine PUBLIC 
     OpenGL::GL
     glfw
+    freetype
 )

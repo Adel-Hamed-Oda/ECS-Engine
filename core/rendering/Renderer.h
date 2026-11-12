@@ -3,8 +3,11 @@
 #include "core/private_imports.h"
 #include "core/scenes/Scene.h"
 #include "core/inbuilt/components/Transform.h"
+#include "core/inbuilt/components/Transform2D.h"
 #include "core/inbuilt/components/Camera.h"
 #include "core/inbuilt/components/MeshRenderer.h"
+#include "core/inbuilt/components/TextRenderer.h"
+#include "core/rendering/font/Font.h"
 #include "core/rendering/shader/Shader.h"
 
 class Renderer
@@ -23,6 +26,11 @@ public:
         // Configure alpha blending (something to do with transparency)
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        if (!ft && FT_Init_FreeType(&ft) == 0) // Init FreeType library
+        {
+            Font::ft = ft;
+        }
     }
 
     static void RenderScene(
@@ -56,18 +64,6 @@ public:
             projection = cam.GetProjectionMatrix(aspectRatio);
             cameraFound = true;
         }
-        else
-        {
-            registry.ForEach<Camera>([&](Entity e, Camera& cam) {
-                if (cameraFound) return;
-                const Transform* camTransform = registry.HasComponent<Transform>(e)
-                    ? &registry.GetComponent<Transform>(e)
-                    : nullptr;
-                view = cam.GetViewMatrix(camTransform);
-                projection = cam.GetProjectionMatrix(aspectRatio);
-                cameraFound = true;
-            });
-        }
 
         registry.ForEach<Transform, MeshRenderer>([&](Entity e, Transform& transform, MeshRenderer& meshRenderer) {
             if (e == NULL_ENTITY) return;
@@ -83,5 +79,50 @@ public:
 
             meshRenderer.Draw();
         });
+
+        const glm::mat4 orthoProjection = glm::ortho(
+            0.0f,
+            static_cast<float>(viewportWidth),
+            0.0f,
+            static_cast<float>(viewportHeight)
+        );
+
+        bool textStateSet = false;
+        GLboolean depthEnabled = GL_FALSE;
+        GLboolean depthMask = GL_TRUE;
+
+        registry.ForEach<Transform2D, TextRenderer>([&](Entity e, Transform2D& transform2D, TextRenderer& textRenderer) {
+            if (e == NULL_ENTITY) return;
+
+            if (!textStateSet)
+            {
+                depthEnabled = glIsEnabled(GL_DEPTH_TEST);
+                glGetBooleanv(GL_DEPTH_WRITEMASK, &depthMask);
+                glDisable(GL_DEPTH_TEST);
+                glDepthMask(GL_FALSE);
+                textStateSet = true;
+            }
+
+            const Shader* activeShader = textRenderer.shader ? textRenderer.shader.get() : overrideShader;
+            if (activeShader && activeShader->IsValid())
+            {
+                activeShader->use();
+                activeShader->setMat4("model", transform2D.GetModelMatrix4());
+                activeShader->setMat4("view", glm::mat4(1.0f));
+                activeShader->setMat4("projection", orthoProjection);
+            }
+
+            textRenderer.Draw(transform2D.position.x, transform2D.position.y, transform2D.scale);
+        });
+
+        if (textStateSet)
+        {
+            glDepthMask(depthMask);
+            if (depthEnabled) glEnable(GL_DEPTH_TEST);
+            else glDisable(GL_DEPTH_TEST);
+        }
     }
+
+private:
+    inline static FT_Library ft = nullptr;
 };
