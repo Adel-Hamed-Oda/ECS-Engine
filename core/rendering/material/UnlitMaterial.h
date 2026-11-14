@@ -4,6 +4,7 @@
 #include "WorldspaceMaterial.h"
 #include "core/rendering/texture/Texture.h"
 #include "core/asset_management/FileReader.h"
+#include "core/rendering/shader/UnlitFallBack.h"
 
 class UnlitMaterial : public WorldspaceMaterial {
 public:
@@ -58,13 +59,17 @@ public:
 			return defaultShader;
 		}
 
-		std::string vertCode = FileReader::ReadFile("assets/Unlit.vert");
-		if (vertCode.empty()) vertCode = FileReader::ReadFile("../assets/Unlit.vert");
-		if (vertCode.empty()) vertCode = FileReader::ReadFile("../../assets/Unlit.vert");
+		std::string vertCode = FileReader::ReadFirstExisting({
+			"assets/Unlit.vert",
+			"../assets/Unlit.vert",
+			"../../assets/Unlit.vert"
+		});
 
-		std::string fragCode = FileReader::ReadFile("assets/Unlit.frag");
-		if (fragCode.empty()) fragCode = FileReader::ReadFile("../assets/Unlit.frag");
-		if (fragCode.empty()) fragCode = FileReader::ReadFile("../../assets/Unlit.frag");
+		std::string fragCode = FileReader::ReadFirstExisting({
+			"assets/Unlit.frag",
+			"../assets/Unlit.frag",
+			"../../assets/Unlit.frag"
+		});
 
 		if (!vertCode.empty() && !fragCode.empty())
 		{
@@ -117,14 +122,18 @@ public:
 
 			void main()
 			{
-				bool useTex = material.hasTexture || hasTexture;
 				vec4 base = (material.baseColor != vec4(0.0)) ? material.baseColor : ((color != vec4(0.0)) ? color : vec4(1.0));
 				vec4 result = FragVertexColor * base;
-				if (useTex)
+
+				if (material.hasTexture)
 				{
-					sampler2D activeSampler = material.hasTexture ? material.textureSampler : textureSampler;
-					result *= texture(activeSampler, FragTextureCoordinate);
+					result *= texture(material.textureSampler, FragTextureCoordinate);
 				}
+				else if (hasTexture)
+				{
+					result *= texture(textureSampler, FragTextureCoordinate);
+				}
+
 				FragColor = result;
 			}
 		)";
