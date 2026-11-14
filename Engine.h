@@ -23,6 +23,8 @@
 
 #include "core/rendering/mesh/Mesh.h"
 #include "core/rendering/mesh/Primitives.h"
+#include "core/rendering/texture/TextureEnums.h"
+#include "core/rendering/texture/Texture.h"
 #include "core/rendering/font/Font.h"
 #include "core/rendering/shader/Shader.h"
 #include "core/rendering/Renderer.h"

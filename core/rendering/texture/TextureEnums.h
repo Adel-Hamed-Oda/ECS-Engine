@@ -1,0 +1,27 @@
+#pragma once
+
+#include "core/private_imports.h"
+
+enum class TextureWrapMode
+{
+    REPEAT = GL_REPEAT,
+    MIRRORED_REPEAT = GL_MIRRORED_REPEAT,
+    CLAMP_TO_EDGE = GL_CLAMP_TO_EDGE,
+    CLAMP_TO_BORDER = GL_CLAMP_TO_BORDER
+};
+
+enum class TextureFilterMode
+{
+    NEAREST = GL_NEAREST,
+    LINEAR = GL_LINEAR,
+    NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST,
+    LINEAR_MIPMAP_NEAREST = GL_LINEAR_MIPMAP_NEAREST,
+    NEAREST_MIPMAP_LINEAR = GL_NEAREST_MIPMAP_LINEAR,
+    LINEAR_MIPMAP_LINEAR = GL_LINEAR_MIPMAP_LINEAR
+};
+
+enum class TextureLoadMode
+{
+    NORMAL,
+    MONOTONE
+};

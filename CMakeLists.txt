@@ -25,6 +25,9 @@ add_library(Engine STATIC
     "Engine.cpp"
     "core/window/Window.cpp"
     "core/scenes/Scene.cpp"
+    "core/rendering/texture/Texture.cpp"
+    "core/rendering/texture/TextureMap.cpp"
+    "core/rendering/texture/TextureUtils.cpp"
     "external/implementations/glad.cpp"
     "external/implementations/stb.cpp"
 )
