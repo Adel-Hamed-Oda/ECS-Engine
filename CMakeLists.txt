@@ -26,6 +26,7 @@ add_library(Engine STATIC
     "core/window/Window.cpp"
     "core/scenes/Scene.cpp"
     "external/implementations/glad.cpp"
+    "external/implementations/stb.cpp"
 )
 
 target_include_directories(Engine PUBLIC
@@ -34,6 +35,7 @@ target_include_directories(Engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/external/glad/include
     ${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/include
     ${CMAKE_CURRENT_SOURCE_DIR}/external/freetype/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
 )
 
 find_package(OpenGL REQUIRED)
