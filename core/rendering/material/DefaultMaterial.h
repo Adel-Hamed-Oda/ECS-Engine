@@ -2,10 +2,11 @@
 
 #include "core/private_imports.h"
 #include "WorldspaceMaterial.h"
+#include "core/rendering/texture/Texture.h"
 
 class DefaultMaterial : public WorldspaceMaterial {
 public:
-	//Texture* texture = nullptr;
+	Texture* texture = nullptr;
 	glm::vec4 baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 ambient = glm::vec3(0.1f, 0.1f, 0.1f);
 	float specularStrength = 0.5f;
@@ -26,12 +27,18 @@ public:
 
 		SendLightsToShader(lights);
 
-		//const bool hasTexture = texture && texture->IsValid();
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, hasTexture ? texture->ID : 0);
+		const bool hasTexture = texture && texture->IsValid();
+		if (hasTexture)
+		{
+			texture->Bind(0);
+		}
+		else
+		{
+			Texture::Unbind(0);
+		}
 
-		//shader->setBool("material.hasTexture", hasTexture);
-		//shader->setInt("material.textureSampler", 0);
+		shader->setBool("material.hasTexture", hasTexture);
+		shader->setInt("material.textureSampler", 0);
 		
 		shader->setVec4("material.baseColor", baseColor);
 		shader->setVec3("material.ambient", ambient);

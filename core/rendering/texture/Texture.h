@@ -65,6 +65,7 @@ public:
     );
 
     static glm::vec2 GetImageDimensions(const std::string& imagePath);
+    static Texture* CreateFromColor(glm::vec4 color, glm::vec2 size);
     
 private:
     std::string path;
