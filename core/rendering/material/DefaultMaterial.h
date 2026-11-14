@@ -12,7 +12,8 @@ public:
 	float specularStrength = 0.5f;
 	float shininess = 32.0f;
 
-	explicit DefaultMaterial(std::shared_ptr<Shader> shader) : WorldspaceMaterial(shader) {}
+	explicit DefaultMaterial(std::shared_ptr<Shader> shader) 
+		: WorldspaceMaterial(std::move(shader)) {}
 	~DefaultMaterial() override = default;
 
 	void ApplyMaterial(
