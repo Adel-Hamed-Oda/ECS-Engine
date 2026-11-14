@@ -95,14 +95,8 @@ public:
                 glDepthMask(GL_FALSE);
                 textStateSet = true;
             }
-            ScreenspaceMaterial* activeMaterial = textRenderer.material.get();
-
-            activeMaterial->shader->use();
-            activeMaterial->shader->setMat4("model", transform2D.GetModelMatrix4());
-            activeMaterial->shader->setMat4("view", glm::mat4(1.0f));
-            activeMaterial->shader->setMat4("projection", orthoProjection);
-
-            textRenderer.Draw(transform2D.position.x, transform2D.position.y, transform2D.scale);
+            
+            textRenderer.Draw(&transform2D, orthoProjection);
         });
 
         if (textStateSet)

@@ -5,7 +5,9 @@
 #include "core/rendering/buffers/VBO.h"
 #include "core/rendering/font/Font.h"
 #include "core/rendering/shader/Shader.h"
+#include "core/inbuilt/components/Transform2D.h"
 #include "core/rendering/material/ScreenspaceMaterial.h"
+#include "core/rendering/material/TextMaterial.h"
 
 struct TextRenderer {
     friend class Renderer;
@@ -60,16 +62,28 @@ public:
 
     ~TextRenderer() { Cleanup(); }
 
-    void Draw(float x, float y, glm::vec2 scale = glm::vec2(1.0f), const glm::vec3& color = glm::vec3(1.0f)) const {
+    void Draw(
+        const Transform2D* transform2D,
+        const glm::mat4& orthoProjection,
+        const glm::vec3& color = glm::vec3(1.0f)
+    ) const
+    {
         if (!vao.IsValid() || !positionVBO.IsValid() || !font || !font->IsValid() || text.empty())
             return;
 
-        // activate corresponding render state
-        if (material && material->shader && material->shader->IsValid())
+        if (material)
         {
-            material->shader->use();
-            material->shader->setVec3("textColor", color);
+            material->ApplyMaterial(transform2D, orthoProjection);
+            if (material->shader && material->shader->IsValid() && color != glm::vec3(1.0f))
+            {
+                material->shader->setVec3("textColor", color);
+            }
         }
+
+        float x = transform2D ? transform2D->position.x : 0.0f;
+        float y = transform2D ? transform2D->position.y : 0.0f;
+        glm::vec2 scale = transform2D ? transform2D->scale : glm::vec2(1.0f);
+
         glActiveTexture(GL_TEXTURE0);
         vao.Bind();
         positionVBO.Bind();
