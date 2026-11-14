@@ -12,5 +12,5 @@ public:
     Material(std::shared_ptr<Shader> shader) : shader(shader) {}
     virtual ~Material() = default;
 
-    virtual void ApplyMaterial() = 0;
+    virtual void ApplyMaterial() {}
 };

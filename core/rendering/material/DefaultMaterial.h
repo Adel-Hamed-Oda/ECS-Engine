@@ -14,9 +14,17 @@ public:
 	explicit DefaultMaterial(std::shared_ptr<Shader> shader) : WorldspaceMaterial(shader) {}
 	~DefaultMaterial() override = default;
 
-	void ApplyMaterial() override
+	void ApplyMaterial(
+		const Transform* transform,
+		const Transform* cameraTransform,
+		const Camera* camera,
+		float aspectRatio,
+		const std::vector<Light*>& lights
+	) override
 	{
-		if (!shader || !shader->IsValid()) return;
+		if (!SetupCoreUniforms(transform, cameraTransform, camera, aspectRatio)) return;
+
+		SendLightsToShader(lights);
 
 		//const bool hasTexture = texture && texture->IsValid();
 		//glActiveTexture(GL_TEXTURE0);
@@ -24,6 +32,7 @@ public:
 
 		//shader->setBool("material.hasTexture", hasTexture);
 		//shader->setInt("material.textureSampler", 0);
+		
 		shader->setVec4("material.baseColor", baseColor);
 		shader->setVec3("material.ambient", ambient);
 		shader->setFloat("material.specularStrength", specularStrength);

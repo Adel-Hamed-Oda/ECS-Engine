@@ -6,15 +6,16 @@
 #include "core/rendering/buffers/EBO.h"
 #include "core/rendering/mesh/Mesh.h"
 #include "core/rendering/shader/Shader.h"
+#include "core/rendering/material/WorldSpaceMaterial.h"
 
 struct MeshRenderer
 {
 public:
     std::unique_ptr<Mesh> mesh;
-    std::shared_ptr<Shader> shader;
+    std::shared_ptr<WorldspaceMaterial> material;
 
-    MeshRenderer(std::unique_ptr<Mesh> mesh, std::shared_ptr<Shader> shader = nullptr)
-        : mesh(std::move(mesh)), shader(std::move(shader))
+    MeshRenderer(std::unique_ptr<Mesh> mesh, std::shared_ptr<WorldspaceMaterial> material = nullptr)
+        : mesh(std::move(mesh)), material(std::move(material))
     {
         InitializeBuffers();
     }
@@ -24,7 +25,7 @@ public:
 
     MeshRenderer(MeshRenderer&& other) noexcept
         : mesh(std::move(other.mesh)),
-          shader(std::move(other.shader)),
+          material(std::move(other.material)),
           vao(std::move(other.vao)),
           posVBO(std::move(other.posVBO)),
           triangleEBO(std::move(other.triangleEBO)),
@@ -43,7 +44,7 @@ public:
             CleanupBuffers();
 
             mesh = std::move(other.mesh);
-            shader = std::move(other.shader);
+            material = std::move(other.material);
             vao = std::move(other.vao);
             posVBO = std::move(other.posVBO);
             triangleEBO = std::move(other.triangleEBO);
@@ -59,9 +60,20 @@ public:
 
     ~MeshRenderer() { CleanupBuffers(); }
 
-    void Draw() const
+    void Draw(
+        const Transform* transform,
+        const Transform* cameraTransform,
+        const Camera* camera,
+        float aspectRatio,
+        const std::vector<Light*>& lights
+    ) const
     {
         if (!vao.IsValid()) return;
+
+        if (material)
+        {
+            material->ApplyMaterial(transform, cameraTransform, camera, aspectRatio, lights);
+        }
 
         vao.Bind();
 

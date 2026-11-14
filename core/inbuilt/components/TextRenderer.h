@@ -5,6 +5,7 @@
 #include "core/rendering/buffers/VBO.h"
 #include "core/rendering/font/Font.h"
 #include "core/rendering/shader/Shader.h"
+#include "core/rendering/material/ScreenspaceMaterial.h"
 
 struct TextRenderer {
     friend class Renderer;
@@ -12,14 +13,14 @@ struct TextRenderer {
 public:
     std::string text = "";
     std::shared_ptr<Font> font;
-    std::shared_ptr<Shader> shader;
+    std::shared_ptr<ScreenspaceMaterial> material;
 
     TextRenderer(
         std::string text = "",
         std::shared_ptr<Font> font = nullptr,
-        std::shared_ptr<Shader> shader = nullptr
+        std::shared_ptr<ScreenspaceMaterial> material = nullptr
     )
-        : text(std::move(text)), font(std::move(font)), shader(std::move(shader))
+        : text(std::move(text)), font(std::move(font)), material(std::move(material))
     {
         InitializeBuffers();
     }
@@ -30,7 +31,7 @@ public:
     TextRenderer(TextRenderer&& other) noexcept
         : text(std::move(other.text)),
           font(std::move(other.font)),
-          shader(std::move(other.shader)),
+          material(std::move(other.material)),
           vao(std::move(other.vao)),
           positionVBO(std::move(other.positionVBO)),
           normalVBO(std::move(other.normalVBO)),
@@ -47,7 +48,7 @@ public:
 
             text = std::move(other.text);
             font = std::move(other.font);
-            shader = std::move(other.shader);
+            material = std::move(other.material);
             vao = std::move(other.vao);
             positionVBO = std::move(other.positionVBO);
             normalVBO = std::move(other.normalVBO);
@@ -64,10 +65,10 @@ public:
             return;
 
         // activate corresponding render state
-        if (shader && shader->IsValid())
+        if (material && material->shader && material->shader->IsValid())
         {
-            shader->use();
-            shader->setVec3("textColor", color);
+            material->shader->use();
+            material->shader->setVec3("textColor", color);
         }
         glActiveTexture(GL_TEXTURE0);
         vao.Bind();

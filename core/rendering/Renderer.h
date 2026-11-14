@@ -2,6 +2,7 @@
 
 #include "core/private_imports.h"
 #include "core/scenes/Scene.h"
+#include "core/inbuilt/components/LightSource.h"
 #include "core/inbuilt/components/Transform.h"
 #include "core/inbuilt/components/Transform2D.h"
 #include "core/inbuilt/components/Camera.h"
@@ -19,7 +20,7 @@ public:
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
-                    
+
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
 
@@ -37,8 +38,7 @@ public:
         Scene* scene,
         int viewportWidth = 1920,
         int viewportHeight = 1080,
-        Entity cameraEntity = NULL_ENTITY,
-        const Shader* overrideShader = nullptr
+        Entity cameraEntity = NULL_ENTITY
     )
     {
         if (!scene)
@@ -54,38 +54,31 @@ public:
         Registry& registry = scene->GetRegistry();
         bool cameraFound = false;
 
-        if (cameraEntity != NULL_ENTITY && registry.IsAlive(cameraEntity) && registry.HasComponent<Camera>(cameraEntity))
-        {
-            const Camera& cam = registry.GetComponent<Camera>(cameraEntity);
-            const Transform* camTransform = registry.HasComponent<Transform>(cameraEntity)
-                ? &registry.GetComponent<Transform>(cameraEntity)
-                : nullptr;
-            view = cam.GetViewMatrix(camTransform);
-            projection = cam.GetProjectionMatrix(aspectRatio);
-            cameraFound = true;
-        }
+        const Camera& cam = registry.HasComponent<Camera>(cameraEntity)
+            ? registry.GetComponent<Camera>(cameraEntity)
+            : Camera();
+        const Transform& camTransform = registry.HasComponent<Transform>(cameraEntity)
+            ? registry.GetComponent<Transform>(cameraEntity)
+            : Transform();
+        view = cam.GetViewMatrix(camTransform);
+        projection = cam.GetProjectionMatrix(aspectRatio);
+
+        registry.ForEach<Transform, LightSource>([&](Entity e, Transform& transform, LightSource& lightSource) {
+            if (e == NULL_ENTITY) return;
+
+            Light* light = new Light();
+            light->lightSource = &lightSource;
+            light->transform = &transform;
+            lights.push_back(light);
+        });
 
         registry.ForEach<Transform, MeshRenderer>([&](Entity e, Transform& transform, MeshRenderer& meshRenderer) {
             if (e == NULL_ENTITY) return;
 
-            const Shader* activeShader = meshRenderer.shader ? meshRenderer.shader.get() : overrideShader;
-            if (activeShader && activeShader->IsValid())
-            {
-                activeShader->use();
-                activeShader->setMat4("model", transform.GetModelMatrix());
-                activeShader->setMat4("view", view);
-                activeShader->setMat4("projection", projection);
-            }
-
-            meshRenderer.Draw();
+            meshRenderer.Draw(&transform, &camTransform, &cam, aspectRatio, lights);
         });
 
-        const glm::mat4 orthoProjection = glm::ortho(
-            0.0f,
-            static_cast<float>(viewportWidth),
-            0.0f,
-            static_cast<float>(viewportHeight)
-        );
+        const glm::mat4 orthoProjection = glm::ortho( 0.0f, static_cast<float>(viewportWidth), 0.0f, static_cast<float>(viewportHeight) );
 
         bool textStateSet = false;
         GLboolean depthEnabled = GL_FALSE;
@@ -102,15 +95,12 @@ public:
                 glDepthMask(GL_FALSE);
                 textStateSet = true;
             }
+            ScreenspaceMaterial* activeMaterial = textRenderer.material.get();
 
-            const Shader* activeShader = textRenderer.shader ? textRenderer.shader.get() : overrideShader;
-            if (activeShader && activeShader->IsValid())
-            {
-                activeShader->use();
-                activeShader->setMat4("model", transform2D.GetModelMatrix4());
-                activeShader->setMat4("view", glm::mat4(1.0f));
-                activeShader->setMat4("projection", orthoProjection);
-            }
+            activeMaterial->shader->use();
+            activeMaterial->shader->setMat4("model", transform2D.GetModelMatrix4());
+            activeMaterial->shader->setMat4("view", glm::mat4(1.0f));
+            activeMaterial->shader->setMat4("projection", orthoProjection);
 
             textRenderer.Draw(transform2D.position.x, transform2D.position.y, transform2D.scale);
         });
@@ -121,8 +111,36 @@ public:
             if (depthEnabled) glEnable(GL_DEPTH_TEST);
             else glDisable(GL_DEPTH_TEST);
         }
+
+        // Clean up lights
+        for (Light* light : lights)
+        {
+            delete light;
+        }
+        lights.clear();
     }
 
 private:
     inline static FT_Library ft = nullptr;
+    inline static std::vector<Light*> lights;
+
+    static void SendLights(const Shader* shader)
+    {
+        if (!shader || !shader->IsValid()) return;
+
+        const int maxLights = 256; // Maximum number of lights MUST BE A CONSTANT
+        const int lightCount = static_cast<int>( std::min(lights.size(), static_cast<std::size_t>(maxLights)) );
+
+        shader->setInt("numLights", lightCount);
+
+        for (int i = 0; i < lightCount; ++i)
+        {
+            Light* light = lights[i];
+
+            const std::string prefix = "lights[" + std::to_string(i) + "].";
+
+            shader->setVec3( prefix + "position", light->transform->position );
+            shader->setVec3( prefix + "color", light->lightSource->color );
+        }
+    }
 };
