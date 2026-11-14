@@ -11,8 +11,13 @@
 #include "core/inbuilt/components/Transform2D.h"
 #include "core/inbuilt/components/Camera.h"
 #include "core/inbuilt/components/Camera2D.h"
+#include "core/inbuilt/components/LightSource.h"
 #include "core/inbuilt/components/MeshRenderer.h"
 #include "core/inbuilt/components/TextRenderer.h"
+
+#include "core/rendering/material/Material.h"
+#include "core/rendering/material/WorldspaceMaterial.h"
+#include "core/rendering/material/DefaultMaterial.h"
 
 #include "core/rendering/mesh/Mesh.h"
 #include "core/rendering/mesh/Primitives.h"
