@@ -28,6 +28,8 @@
 #include "core/rendering/texture/Texture.h"
 #include "core/rendering/font/Font.h"
 #include "core/rendering/shader/Shader.h"
+#include "core/rendering/shader/FallBacks.h"
+#include "core/rendering/shader/UnlitFallBack.h"
 #include "core/rendering/Renderer.h"
 
 #include "anim/Timer.h"
