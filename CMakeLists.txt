@@ -39,6 +39,7 @@ target_include_directories(Engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/include
     ${CMAKE_CURRENT_SOURCE_DIR}/external/freetype/include
     ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/rapidjson/include
 )
 
 find_package(OpenGL REQUIRED)
