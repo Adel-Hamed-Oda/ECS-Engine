@@ -19,8 +19,8 @@ public:
         : Shader(basePath + ".vert", basePath + ".frag") {}
 
     Shader(const std::string& vertexPath, const std::string& fragmentPath) {
-        const std::string vertexCode = FileReader::ReadFile(vertexPath);
-        const std::string fragmentCode = FileReader::ReadFile(fragmentPath);
+        const std::string vertexCode = FileReader::Read(vertexPath);
+        const std::string fragmentCode = FileReader::Read(fragmentPath);
         InitFromSource(vertexCode, fragmentCode);
     }
 
