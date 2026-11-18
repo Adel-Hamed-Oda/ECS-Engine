@@ -4,13 +4,13 @@
 
 class FileReader {
 public:
-    static bool FileExists(const std::string& filepath)
+    static bool Exists(const std::string& filepath)
     {
         std::ifstream file(filepath, std::ios::in | std::ios::binary);
         return file.is_open();
     }
 
-    static std::string ReadFile(const std::string& filepath, bool logOnError = true)
+    static std::string Read(const std::string& filepath, bool logOnError = true)
     {
         std::ifstream file(filepath, std::ios::in | std::ios::binary);
         if (!file.is_open())
@@ -31,9 +31,9 @@ public:
     {
         for (const auto& path : candidatePaths)
         {
-            if (FileExists(path))
+            if (Exists(path))
             {
-                return ReadFile(path, false);
+                return Read(path, false);
             }
         }
         return "";
