@@ -58,6 +58,10 @@ public:
         return index < generations.size() && generations[index] == GetEntityGeneration(e);
     }
 
+    size_t GetAliveEntityCount() const {
+        return aliveEntities.size();
+    }
+
     template <typename T, typename... Args>
     T& AddComponent(Entity e, Args&&... args) {
         auto pool = GetOrCreatePool<T>();

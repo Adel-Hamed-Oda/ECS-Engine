@@ -6,7 +6,12 @@ std::vector<Window*> Window::AllWindows;
 int Window::nextId = 0;
 
 Window* Window::GetPrimaryWindow() {
-    return AllWindows.empty() ? nullptr : AllWindows[0];
+    for (Window* win : AllWindows) {
+        if (win && !win->m_isDebugWindow && win->IsOpen()) {
+            return win;
+        }
+    }
+    return nullptr;
 }
 
 Window* Window::Get(int id) {
@@ -20,15 +25,18 @@ const std::vector<Window*>& Window::GetAllWindows() {
     return AllWindows;
 }
 
-Window::Window(const char* title, glm::ivec2 position, glm::ivec2 size, Window* shareWindow) {
+Window::Window(const char* title, glm::ivec2 position, glm::ivec2 size, Window* shareWindow, bool isDebug) {
     Engine::init();
 
     id = nextId++;
+    m_isDebugWindow = isDebug;
 
     // Share OpenGL resources (textures, buffers, shaders) across windows
     GLFWwindow* shareContext = nullptr;
     if (shareWindow && shareWindow->m_window) {
         shareContext = shareWindow->m_window;
+    } else if (Window* primary = GetPrimaryWindow()) {
+        shareContext = primary->m_window;
     } else if (!AllWindows.empty() && AllWindows[0]->m_window) {
         shareContext = AllWindows[0]->m_window;
     }
@@ -71,8 +79,26 @@ void Window::Close() {
     }
     glfwDestroyWindow(windowToDestroy);
 
-    if (!AllWindows.empty() && AllWindows[0]->m_window) {
+    if (Window* primary = GetPrimaryWindow()) {
+        if (primary->m_window) {
+            glfwMakeContextCurrent(primary->m_window);
+        }
+    } else if (!AllWindows.empty() && AllWindows[0]->m_window) {
         glfwMakeContextCurrent(AllWindows[0]->m_window);
+    }
+
+    // When the other (game) windows are closed, ensure the debug window is closed as well
+    if (!m_isDebugWindow) {
+        bool anyGameWindowOpen = false;
+        for (Window* win : AllWindows) {
+            if (win && win->IsOpen() && !win->m_isDebugWindow) {
+                anyGameWindowOpen = true;
+                break;
+            }
+        }
+        if (!anyGameWindowOpen) {
+            DebugWindow::CloseAll();
+        }
     }
 }
 
@@ -132,6 +158,8 @@ void Window::SetTitle(const std::string& title) {
 }
 
 void Window::SetAsPrimaryWindow() {
+    if (m_isDebugWindow) return; // Debug window cannot become primary
+
     auto it = std::find(AllWindows.begin(), AllWindows.end(), this);
     if (it != AllWindows.end()) {
         std::iter_swap(AllWindows.begin(), it);
@@ -170,6 +198,30 @@ Entity Window::GetCamera() const {
 
 void Window::SetCamera(Entity camera) {
     m_assignedCamera = camera;
+}
+
+bool Window::IsDebugWindow() const {
+    return m_isDebugWindow;
+}
+
+void Window::Render() {
+    glm::ivec2 fbSize = GetFramebufferSize();
+    if (fbSize.x <= 0 || fbSize.y <= 0) return;
+
+    if (glad_glViewport) {
+        glViewport(0, 0, fbSize.x, fbSize.y);
+    }
+
+    if (glad_glClear) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    if (Scene* targetScene = GetScene()) {
+        if (targetScene->GetState() == SceneState::Unloaded) {
+            targetScene->Load();
+        }
+        Renderer::RenderScene(targetScene, fbSize.x, fbSize.y, GetCamera());
+    }
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {

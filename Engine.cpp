@@ -35,9 +35,30 @@ void Engine::run() {
     MainLoop();
 }
 
+DebugWindow* Engine::OpenDebugWindow(glm::ivec2 position, glm::ivec2 size) {
+    if (!active) {
+        init();
+    }
+    return DebugWindow::Open(position, size);
+}
+
+void Engine::CloseDebugWindow() {
+    DebugWindow::CloseAll();
+}
+
+DebugWindow* Engine::GetDebugWindow() {
+    return DebugWindow::GetInstance();
+}
+
+bool Engine::IsDebugWindowOpen() {
+    return DebugWindow::IsOpenStatic();
+}
+
 void Engine::terminate() {
     if (!active) return;
     active = false;
+
+    DebugWindow::CloseAll();
 
     // Unload all loaded scenes while OpenGL contexts are still valid
     std::vector<Scene*> allScenes = Scene::GetAllScenes();
@@ -89,11 +110,9 @@ void Engine::UpdateScenes() {
 
     if (scenesToUpdate.empty()) return;
 
-    // Ensure an OpenGL context is current if Load/Start/Update creates GPU resources
-    if (glfwGetCurrentContext() == nullptr) {
-        if (Window* primary = Window::GetPrimaryWindow()) {
-            primary->MakeContextCurrent();
-        }
+    // Ensure OpenGL context is current on the primary game window during updates
+    if (Window* primary = Window::GetPrimaryWindow()) {
+        primary->MakeContextCurrent();
     }
 
     for (Scene* scene : scenesToUpdate) {
@@ -123,33 +142,19 @@ void Engine::RenderWindows() {
             continue;
         }
 
-        // Direct OpenGL calls to this window's canvas
-        // not doing this will make all changes happen to the remaining windows, I guess
-        // did I say I hate openGL's way of handling things?
         win->MakeContextCurrent();
-
-        if (glad_glViewport) {
-            glViewport(0, 0, fbSize.x, fbSize.y);
-        }
-
-        if (glad_glClear) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        }
-
-        if (Scene* targetScene = win->GetScene()) {
-            if (targetScene->GetState() == SceneState::Unloaded) {
-                targetScene->Load();
-                if (!active) break;
-            }
-            Renderer::RenderScene(targetScene, fbSize.x, fbSize.y, win->GetCamera());
-        }
+        win->Render();
 
         // Pace the frame on the first presented window so N windows don't divide FPS by N
-        // That's what gemini told me lol
         glfwSwapInterval(vsyncAppliedThisFrame ? 0 : 1);
         vsyncAppliedThisFrame = true;
 
         win->SwapBuffers();
+    }
+
+    // Ensure OpenGL context is returned to the primary window after all windows render
+    if (Window* primary = Window::GetPrimaryWindow()) {
+        primary->MakeContextCurrent();
     }
 
     // Throttle CPU usage when running without windows or when all windows are minimized
@@ -165,6 +170,7 @@ void Engine::MainLoop() {
     while (active) {
         double currentFrameTime = glfwGetTime();
         Time::Update(&lastFrameTime, currentFrameTime);
+        deltaTime = static_cast<float>(Time::deltaTime);
 
         glfwPollEvents();
 
@@ -179,12 +185,25 @@ void Engine::MainLoop() {
 
         if (!active) break;
 
-        // If open windows were present and all have now closed, cleanly exit the loop
-        if (!currentWindows.empty() && Window::GetAllWindows().empty()) {
+        // Check if any non-debug (game) window is open
+        int openGameWindows = 0;
+        for (Window* win : Window::GetAllWindows()) {
+            if (win && win->IsOpen() && !win->IsDebugWindow()) {
+                openGameWindows++;
+            }
+        }
+
+        // When the other (game) windows are closed, close the debug window as well
+        if (openGameWindows == 0) {
+            DebugWindow::CloseAll();
             break;
         }
 
         // 1. UPDATE PHASE
+        if (Window* primary = Window::GetPrimaryWindow()) {
+            primary->MakeContextCurrent();
+        }
+
         Timer::UpdateAll();
         Tween::UpdateAll();
         UpdateScenes();

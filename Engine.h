@@ -40,10 +40,17 @@
 #include "peripherals/Mouse.h"
 
 class Engine {
+    friend class DebugWindow;
+
 public:
     static void init();
     static void run();
     static void terminate();
+
+    static DebugWindow* OpenDebugWindow(glm::ivec2 position = glm::ivec2(40, 40), glm::ivec2 size = glm::ivec2(520, 680));
+    static void CloseDebugWindow();
+    static DebugWindow* GetDebugWindow();
+    static bool IsDebugWindowOpen();
 
 private:
     inline static bool active = false;

@@ -24,6 +24,7 @@ add_subdirectory(external/freetype)
 add_library(Engine STATIC
     "Engine.cpp"
     "core/window/Window.cpp"
+    "core/window/DebugWindow.cpp"
     "core/scenes/Scene.cpp"
     "core/rendering/texture/Texture.cpp"
     "core/rendering/texture/TextureMap.cpp"

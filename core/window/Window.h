@@ -14,6 +14,7 @@ class Scene;
 class Window
 {
     friend class Engine;
+    friend class DebugWindow;
 
 public:
     Event<Window> onWindowClose;
@@ -26,12 +27,13 @@ public:
         const char* title = "New window",
         glm::ivec2 position = glm::ivec2(0, 0),
         glm::ivec2 size = glm::ivec2(1920, 1080),
-        Window* shareWindow = nullptr
+        Window* shareWindow = nullptr,
+        bool isDebug = false
     );
 
-    ~Window();
+    virtual ~Window();
 
-    void Close();
+    virtual void Close();
     bool IsOpen() const;
 
     int GetId() const;
@@ -44,20 +46,24 @@ public:
     void SetPosition(int x, int y);
     void SetSize(int width = -1, int height = -1);
     void SetTitle(const std::string& title);
-    void SetAsPrimaryWindow();
+    virtual void SetAsPrimaryWindow();
 
     Scene* GetScene() const;
-    void SetScene(Scene* scene);
-    void SetScene(const std::string& sceneName);
+    virtual void SetScene(Scene* scene);
+    virtual void SetScene(const std::string& sceneName);
 
     Entity GetCamera() const;
-    void SetCamera(Entity camera);
+    virtual void SetCamera(Entity camera);
 
-private:
+    bool IsDebugWindow() const;
+    virtual void Render();
+
+protected:
     static std::vector<Window*> AllWindows;
     static int nextId;
 
     int id = 0;
+    bool m_isDebugWindow = false;
     GLFWwindow* m_window = nullptr;
     Scene* m_scene = nullptr;
     Entity m_assignedCamera = NULL_ENTITY;
@@ -67,4 +73,37 @@ private:
     void SwapBuffers();
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+};
+
+class DebugWindow : public Window
+{
+    friend class Engine;
+
+public:
+    static DebugWindow* Open(
+        glm::ivec2 position = glm::ivec2(40, 40),
+        glm::ivec2 size = glm::ivec2(520, 680),
+        Window* shareWindow = nullptr
+    );
+    static void CloseAll();
+    static DebugWindow* GetInstance();
+    static bool IsOpenStatic();
+
+    DebugWindow(
+        glm::ivec2 position = glm::ivec2(40, 40),
+        glm::ivec2 size = glm::ivec2(520, 680),
+        Window* shareWindow = nullptr
+    );
+    ~DebugWindow() override;
+
+    void Close() override;
+    void SetScene(Scene* scene) override;
+    void SetScene(const std::string& sceneName) override;
+    void SetCamera(Entity camera) override;
+    void SetAsPrimaryWindow() override;
+    void Render() override;
+
+private:
+    static DebugWindow* s_instance;
+    void RenderDebugContent(int width, int height);
 };

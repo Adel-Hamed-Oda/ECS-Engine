@@ -104,7 +104,27 @@ private:
         }
 
         FT_Face face = nullptr;
-        if (FT_New_Face(ft, fontPath.c_str(), 0, &face))
+        std::vector<std::string> candidates = {
+            fontPath,
+            "fonts/" + fontPath,
+            "../" + fontPath,
+            "../fonts/" + fontPath,
+            "C:/Windows/Fonts/consola.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/calibri.ttf",
+            "C:/Windows/Fonts/segoeui.ttf"
+        };
+
+        bool loadedFace = false;
+        for (const auto& path : candidates) {
+            if (path.empty()) continue;
+            if (FT_New_Face(ft, path.c_str(), 0, &face) == 0) {
+                loadedFace = true;
+                break;
+            }
+        }
+
+        if (!loadedFace)
         {
             std::cerr << "ERROR::FREETYPE: Failed to load font: " << fontPath << std::endl;
             return;
