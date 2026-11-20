@@ -45,12 +45,40 @@ public:
         generations[index]++; // Invalidate existing handles
         freeIndices.push(index);
 
-        aliveEntities.erase(std::remove(aliveEntities.begin(), aliveEntities.end(), e), aliveEntities.end());
-    }
-    void DestroyAllEntities() {
-        while (!aliveEntities.empty()) {
-            DestroyEntity(aliveEntities.back());
+        if (!aliveEntities.empty() && aliveEntities.back() == e) {
+            aliveEntities.pop_back();
+        } else {
+            auto it = std::find(aliveEntities.begin(), aliveEntities.end(), e);
+            if (it != aliveEntities.end()) {
+                *it = aliveEntities.back();
+                aliveEntities.pop_back();
+            }
         }
+    }
+
+    void DestroyAllEntities() {
+        for (auto& [id, pool] : componentPools) {
+            for (Entity e : aliveEntities) {
+                pool->Destroy(e);
+            }
+        }
+        for (Entity e : aliveEntities) {
+            uint32_t index = GetEntityIndex(e);
+            if (index < signatures.size()) {
+                signatures[index].reset();
+            }
+            if (index < generations.size()) {
+                generations[index]++;
+            }
+            freeIndices.push(index);
+        }
+        aliveEntities.clear();
+    }
+
+    void Reserve(size_t capacity) {
+        generations.reserve(capacity);
+        signatures.reserve(capacity);
+        aliveEntities.reserve(capacity);
     }
 
     bool IsAlive(Entity e) const {
@@ -86,6 +114,12 @@ public:
     template <typename T>
     bool HasComponent(Entity e) const {
         return signatures[GetEntityIndex(e)].test(GetComponentTypeID<T>());
+    }
+
+    template <typename T>
+    size_t GetComponentCount() const {
+        const ComponentPool<T>* pool = TryGetPool<T>();
+        return pool ? pool->GetDenseEntities().size() : 0;
     }
 
     // Iterates over all entities that have the specified component signature and applies the function to them.

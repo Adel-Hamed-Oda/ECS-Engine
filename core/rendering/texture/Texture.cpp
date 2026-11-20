@@ -264,3 +264,38 @@ GLenum Texture::GetFormatFromChannels(int channels)
             return GL_RGB;
     }
 }
+
+void Texture::UpdatePixels(const unsigned char* data, int w, int h, int channels)
+{
+    if (!data || w <= 0 || h <= 0) return;
+
+    if (ID != 0 && width == w && height == h && nrChannels == channels)
+    {
+        glBindTexture(GL_TEXTURE_2D, ID);
+        const GLenum format = GetFormatFromChannels(channels);
+        GLint previousUnpackAlignment = 4;
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousUnpackAlignment);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, data);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, previousUnpackAlignment);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        rawPixels.assign(data, data + (static_cast<size_t>(w) * static_cast<size_t>(h) * static_cast<size_t>(channels)));
+    }
+    else
+    {
+        LoadFromPixels(data, w, h, channels);
+    }
+}
+
+std::shared_ptr<Texture> Texture::CreateFromPixels(
+    const unsigned char* data,
+    int width,
+    int height,
+    int nrChannels,
+    TextureWrapMode wrap,
+    TextureFilterMode filter
+)
+{
+    return std::make_shared<Texture>(data, width, height, nrChannels, TextureLoadMode::NORMAL, wrap, filter);
+}

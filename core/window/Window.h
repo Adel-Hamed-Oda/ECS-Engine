@@ -82,7 +82,7 @@ class DebugWindow : public Window
 public:
     static DebugWindow* Open(
         glm::ivec2 position = glm::ivec2(40, 40),
-        glm::ivec2 size = glm::ivec2(520, 680),
+        glm::ivec2 size = glm::ivec2(720, 580),
         Window* shareWindow = nullptr
     );
     static void CloseAll();
@@ -91,7 +91,7 @@ public:
 
     DebugWindow(
         glm::ivec2 position = glm::ivec2(40, 40),
-        glm::ivec2 size = glm::ivec2(520, 680),
+        glm::ivec2 size = glm::ivec2(720, 580),
         Window* shareWindow = nullptr
     );
     ~DebugWindow() override;

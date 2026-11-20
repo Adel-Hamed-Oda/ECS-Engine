@@ -75,6 +75,12 @@ public:
     std::vector<T>& GetDenseArray() { return dense; }
     const std::vector<Entity>& GetDenseEntities() const { return denseEntities; }
 
+    void Reserve(size_t capacity) {
+        sparse.reserve(capacity);
+        dense.reserve(capacity);
+        denseEntities.reserve(capacity);
+    }
+
 private:
     // this is the array of components put side by side in memory for optimal cache usage
     std::vector<T> dense; 

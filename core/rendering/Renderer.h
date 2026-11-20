@@ -8,6 +8,8 @@
 #include "core/inbuilt/components/Camera.h"
 #include "core/inbuilt/components/MeshRenderer.h"
 #include "core/inbuilt/components/TextRenderer.h"
+#include "core/inbuilt/components/ImageRenderer.h"
+#include "core/rendering/material/ImageMaterial.h"
 #include "core/rendering/font/Font.h"
 #include "core/rendering/shader/Shader.h"
 
@@ -64,8 +66,6 @@ public:
         projection = cam.GetProjectionMatrix(aspectRatio);
 
         registry.ForEach<Transform, LightSource>([&](Entity e, Transform& transform, LightSource& lightSource) {
-            if (e == NULL_ENTITY) return;
-
             Light* light = new Light();
             light->lightSource = &lightSource;
             light->transform = &transform;
@@ -73,38 +73,25 @@ public:
         });
 
         registry.ForEach<Transform, MeshRenderer>([&](Entity e, Transform& transform, MeshRenderer& meshRenderer) {
-            if (e == NULL_ENTITY) return;
-
             meshRenderer.Draw(&transform, &camTransform, &cam, aspectRatio, lights);
         });
 
+        // default orthographic projection for 2D rendering (cause why not)
         const glm::mat4 orthoProjection = glm::ortho( 0.0f, static_cast<float>(viewportWidth), 0.0f, static_cast<float>(viewportHeight) );
 
-        bool textStateSet = false;
-        GLboolean depthEnabled = GL_FALSE;
-        GLboolean depthMask = GL_TRUE;
+        // render screen-space images
+        Enable2DState();
+        registry.ForEach<Transform2D, ImageRenderer>([&](Entity e, Transform2D& transform2D, ImageRenderer& imageRenderer) {
+            imageRenderer.Draw(&transform2D, orthoProjection);
+        });
 
+        // render screen-space text
+        Enable2DState();
         registry.ForEach<Transform2D, TextRenderer>([&](Entity e, Transform2D& transform2D, TextRenderer& textRenderer) {
-            if (e == NULL_ENTITY) return;
-
-            if (!textStateSet)
-            {
-                depthEnabled = glIsEnabled(GL_DEPTH_TEST);
-                glGetBooleanv(GL_DEPTH_WRITEMASK, &depthMask);
-                glDisable(GL_DEPTH_TEST);
-                glDepthMask(GL_FALSE);
-                textStateSet = true;
-            }
-            
             textRenderer.Draw(&transform2D, orthoProjection);
         });
 
-        if (textStateSet)
-        {
-            glDepthMask(depthMask);
-            if (depthEnabled) glEnable(GL_DEPTH_TEST);
-            else glDisable(GL_DEPTH_TEST);
-        }
+        Disable2DState();
 
         // Clean up lights
         for (Light* light : lights)
@@ -117,6 +104,10 @@ public:
 private:
     inline static FT_Library ft = nullptr;
     inline static std::vector<Light*> lights;
+
+    inline static bool screenspace2DStateSet = false;
+    inline static GLboolean depthEnabled = GL_FALSE;
+    inline static GLboolean depthMask = GL_TRUE;
 
     static void SendLights(const Shader* shader)
     {
@@ -135,6 +126,26 @@ private:
 
             shader->setVec3( prefix + "position", light->transform->position );
             shader->setVec3( prefix + "color", light->lightSource->color );
+        }
+    }
+
+    static void Enable2DState() {
+        if (!screenspace2DStateSet)
+        {
+            depthEnabled = glIsEnabled(GL_DEPTH_TEST);
+            glGetBooleanv(GL_DEPTH_WRITEMASK, &depthMask);
+            glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
+            screenspace2DStateSet = true;
+        }
+    }
+
+    static void Disable2DState() {
+        if (screenspace2DStateSet)
+        {
+            glDepthMask(depthMask);
+            if (depthEnabled) glEnable(GL_DEPTH_TEST);
+            else glDisable(GL_DEPTH_TEST);
         }
     }
 };

@@ -171,7 +171,7 @@ void Window::SetAsPrimaryWindow() {
 }
 
 void Window::MakeContextCurrent() {
-    if (m_window) {
+    if (m_window && glfwGetCurrentContext() != m_window) {
         glfwMakeContextCurrent(m_window);
     }
 }

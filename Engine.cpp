@@ -131,6 +131,7 @@ void Engine::RenderWindows() {
     // Snapshot open windows in case callbacks close or open windows mid-frame
     std::vector<Window*> windows = Window::GetAllWindows();
     bool vsyncAppliedThisFrame = false;
+    const bool profiling = Profiler::IsEnabled();
 
     for (Window* win : windows) {
         if (!active) break;
@@ -143,13 +144,24 @@ void Engine::RenderWindows() {
         }
 
         win->MakeContextCurrent();
-        win->Render();
 
+        if (win->IsDebugWindow()) {
+            if (profiling) Profiler::BeginSection(ProfileID::DebugOverlay);
+            win->Render();
+            if (profiling) Profiler::EndSection(ProfileID::DebugOverlay);
+        } else {
+            if (profiling) Profiler::BeginSection(ProfileID::Render3D);
+            win->Render();
+            if (profiling) Profiler::EndSection(ProfileID::Render3D);
+        }
+
+        if (profiling) Profiler::BeginSection(ProfileID::BufferSwap);
         // Pace the frame on the first presented window so N windows don't divide FPS by N
         glfwSwapInterval(vsyncAppliedThisFrame ? 0 : 1);
         vsyncAppliedThisFrame = true;
 
         win->SwapBuffers();
+        if (profiling) Profiler::EndSection(ProfileID::BufferSwap);
     }
 
     // Ensure OpenGL context is returned to the primary window after all windows render
@@ -168,10 +180,16 @@ void Engine::MainLoop() {
     double lastFrameTime = glfwGetTime();
 
     while (active) {
+        const bool profiling = Profiler::IsEnabled();
+
+        if (profiling) Profiler::BeginFrame();
+
         double currentFrameTime = glfwGetTime();
         Time::Update(&lastFrameTime, currentFrameTime);
         deltaTime = static_cast<float>(Time::deltaTime);
 
+        // 1. Events & Input Section
+        if (profiling) Profiler::BeginSection(ProfileID::EventsInput);
         glfwPollEvents();
 
         // Close any individual windows that requested to close
@@ -182,6 +200,7 @@ void Engine::MainLoop() {
                 win->Close();
             }
         }
+        if (profiling) Profiler::EndSection(ProfileID::EventsInput);
 
         if (!active) break;
 
@@ -199,19 +218,25 @@ void Engine::MainLoop() {
             break;
         }
 
-        // 1. UPDATE PHASE
-        if (Window* primary = Window::GetPrimaryWindow()) {
-            primary->MakeContextCurrent();
-        }
-
+        // 2. Timers & Tweens Section
+        if (profiling) Profiler::BeginSection(ProfileID::TimersTweens);
         Timer::UpdateAll();
         Tween::UpdateAll();
-        UpdateScenes();
+        if (profiling) Profiler::EndSection(ProfileID::TimersTweens);
 
         if (!active) break;
 
-        // 2. RENDER PHASE
+        // 3. Scene & ECS Update Section
+        if (profiling) Profiler::BeginSection(ProfileID::SceneECS);
+        UpdateScenes();
+        if (profiling) Profiler::EndSection(ProfileID::SceneECS);
+
+        if (!active) break;
+
+        // 4. Render Phase (3D Scene Render, Debug Profiler, Buffer Swap)
         RenderWindows();
+
+        if (profiling) Profiler::EndFrame();
     }
 
     terminate();

@@ -42,6 +42,7 @@ public:
 
     Entity Instantiate() { return registry.CreateEntity(); }
     void Destroy(Entity e) { registry.DestroyEntity(e); }
+    void Reserve(size_t capacity) { registry.Reserve(capacity); }
 
     template <typename T, typename... Args>
     T& AddComponent(Entity e, Args&&... args) { return registry.AddComponent<T>(e, std::forward<Args>(args)...); }

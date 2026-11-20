@@ -4,7 +4,7 @@
 #include "WorldspaceMaterial.h"
 #include "core/rendering/texture/Texture.h"
 #include "core/asset_management/FileReader.h"
-#include "core/rendering/shader/UnlitFallBack.h"
+#include "core/FallBacks.h"
 
 class UnlitMaterial : public WorldspaceMaterial {
 public:
@@ -81,8 +81,8 @@ public:
 		}
 
 		defaultShader = Shader::CreateFromSource(
-			UnlitFallBack::VertexShaderCode,
-			UnlitFallBack::FragmentShaderCode
+			FallBacks::VertexShaderCode,
+			FallBacks::FragmentShaderCode
 		);
 		return defaultShader;
 	}

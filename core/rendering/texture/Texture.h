@@ -66,6 +66,19 @@ public:
 
     static glm::vec2 GetImageDimensions(const std::string& imagePath);
     static Texture* CreateFromColor(glm::vec4 color, glm::vec2 size);
+
+    // Updates existing GPU texture with new pixel data without recreating GL texture ID (if dimensions match)
+    void UpdatePixels(const unsigned char* data, int width, int height, int nrChannels = 4);
+
+    // Static helper to create a shared_ptr<Texture> from raw memory pixels
+    static std::shared_ptr<Texture> CreateFromPixels(
+        const unsigned char* data,
+        int width,
+        int height,
+        int nrChannels = 4,
+        TextureWrapMode wrap = TextureWrapMode::CLAMP_TO_EDGE,
+        TextureFilterMode filter = TextureFilterMode::NEAREST
+    );
     
 private:
     std::string path;
