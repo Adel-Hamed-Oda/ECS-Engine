@@ -83,8 +83,10 @@ public:
     static DebugWindow* Open(
         glm::ivec2 position = glm::ivec2(40, 40),
         glm::ivec2 size = glm::ivec2(720, 580),
-        Window* shareWindow = nullptr
+        Window* shareWindow = nullptr,
+        bool lightweight = false
     );
+    static DebugWindow* Open(bool lightweight);
     static void CloseAll();
     static DebugWindow* GetInstance();
     static bool IsOpenStatic();
@@ -92,9 +94,13 @@ public:
     DebugWindow(
         glm::ivec2 position = glm::ivec2(40, 40),
         glm::ivec2 size = glm::ivec2(720, 580),
-        Window* shareWindow = nullptr
+        Window* shareWindow = nullptr,
+        bool lightweight = false
     );
     ~DebugWindow() override;
+
+    bool IsLightweight() const { return m_lightweight; }
+    void SetLightweight(bool lightweight);
 
     void Close() override;
     void SetScene(Scene* scene) override;
@@ -105,5 +111,6 @@ public:
 
 private:
     static DebugWindow* s_instance;
+    bool m_lightweight = false;
     void RenderDebugContent(int width, int height);
 };

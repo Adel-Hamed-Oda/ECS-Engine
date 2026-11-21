@@ -44,11 +44,21 @@ void Engine::run() {
     MainLoop();
 }
 
-DebugWindow* Engine::OpenDebugWindow(glm::ivec2 position, glm::ivec2 size) {
+DebugWindow* Engine::OpenDebugWindow(glm::ivec2 position, glm::ivec2 size, bool lightweight) {
     if (!active) {
         init();
     }
-    return DebugWindow::Open(position, size);
+    s_debugLightweight = lightweight;
+    return DebugWindow::Open(position, size, nullptr, lightweight);
+}
+
+DebugWindow* Engine::OpenDebugWindow(bool lightweight) {
+    if (!active) {
+        init();
+    }
+    s_debugLightweight = lightweight;
+    glm::ivec2 size = lightweight ? glm::ivec2(380, 160) : glm::ivec2(720, 580);
+    return DebugWindow::Open(glm::ivec2(40, 40), size, nullptr, lightweight);
 }
 
 void Engine::CloseDebugWindow() {
@@ -61,6 +71,20 @@ DebugWindow* Engine::GetDebugWindow() {
 
 bool Engine::IsDebugWindowOpen() {
     return DebugWindow::IsOpenStatic();
+}
+
+void Engine::SetDebugWindowLightweight(bool lightweight) {
+    s_debugLightweight = lightweight;
+    if (DebugWindow* win = DebugWindow::GetInstance()) {
+        win->SetLightweight(lightweight);
+    }
+}
+
+bool Engine::IsDebugWindowLightweight() {
+    if (DebugWindow* win = DebugWindow::GetInstance()) {
+        return win->IsLightweight();
+    }
+    return s_debugLightweight;
 }
 
 void Engine::terminate() {

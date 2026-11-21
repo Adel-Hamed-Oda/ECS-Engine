@@ -2,15 +2,20 @@
 
 DebugWindow* DebugWindow::s_instance = nullptr;
 
-DebugWindow* DebugWindow::Open(glm::ivec2 position, glm::ivec2 size, Window* shareWindow) {
+DebugWindow* DebugWindow::Open(glm::ivec2 position, glm::ivec2 size, Window* shareWindow, bool lightweight) {
     if (s_instance && s_instance->IsOpen()) {
+        s_instance->SetLightweight(lightweight);
         return s_instance;
     }
 
     Window* shareContext = shareWindow ? shareWindow : Window::GetPrimaryWindow();
-    s_instance = new DebugWindow(position, size, shareContext);
-    Profiler::SetEnabled(true);
+    s_instance = new DebugWindow(position, size, shareContext, lightweight);
     return s_instance;
+}
+
+DebugWindow* DebugWindow::Open(bool lightweight) {
+    glm::ivec2 defaultSize = lightweight ? glm::ivec2(380, 160) : glm::ivec2(720, 580);
+    return Open(glm::ivec2(40, 40), defaultSize, nullptr, lightweight);
 }
 
 void DebugWindow::CloseAll() {
@@ -33,11 +38,13 @@ bool DebugWindow::IsOpenStatic() {
     return s_instance != nullptr && s_instance->IsOpen();
 }
 
-DebugWindow::DebugWindow(glm::ivec2 position, glm::ivec2 size, Window* shareWindow)
-    : Window("Debug", position, size, shareWindow ? shareWindow : Window::GetPrimaryWindow(), true)
+DebugWindow::DebugWindow(glm::ivec2 position, glm::ivec2 size, Window* shareWindow, bool lightweight)
+    : Window(lightweight ? "Debug (Lightweight)" : "Debug", position, size, shareWindow ? shareWindow : Window::GetPrimaryWindow(), true),
+      m_lightweight(lightweight)
 {
     s_instance = this;
-    Profiler::SetEnabled(true);
+    // Only enable full engine-wide profiling when NOT in lightweight mode
+    Profiler::SetEnabled(!lightweight);
 
     // Restore active context to primary game window so creating DebugWindow doesn't steal focus/input
     if (Window* primary = Window::GetPrimaryWindow()) {
@@ -45,6 +52,13 @@ DebugWindow::DebugWindow(glm::ivec2 position, glm::ivec2 size, Window* shareWind
             primary->MakeContextCurrent();
         }
     }
+}
+
+void DebugWindow::SetLightweight(bool lightweight) {
+    if (m_lightweight == lightweight) return;
+    m_lightweight = lightweight;
+    Profiler::SetEnabled(!lightweight);
+    SetTitle(lightweight ? "Debug (Lightweight)" : "Debug");
 }
 
 DebugWindow::~DebugWindow() {
@@ -124,34 +138,7 @@ void DebugWindow::RenderDebugContent(int width, int height) {
     }
     float avgMs = sumMs / static_cast<float>(history.size());
     float fps = (avgMs > 0.001f) ? (1000.0f / avgMs) : 0.0f;
-
-    // Scene and entity metrics via engine Scene & Registry (O(1) pool queries)
-    std::vector<Scene*> allScenes = Scene::GetAllScenes();
-    int activeScenesCount = 0;
-    int totalEntities = 0;
-    int totalMeshes = 0;
-    int totalLights = 0;
-    int totalCameras = 0;
-    std::string primarySceneName = "None";
-
-    for (Scene* s : allScenes) {
-        if (!s) continue;
-        if (s->GetState() != SceneState::Unloaded) {
-            activeScenesCount++;
-            if (primarySceneName == "None") {
-                primarySceneName = s->GetName();
-            }
-            Registry& reg = s->GetRegistry();
-            totalEntities += static_cast<int>(reg.GetAliveEntityCount());
-            totalMeshes += static_cast<int>(reg.GetComponentCount<MeshRenderer>());
-            totalLights += static_cast<int>(reg.GetComponentCount<LightSource>());
-            totalCameras += static_cast<int>(reg.GetComponentCount<Camera>());
-        }
-    }
-
-    Window* primary = Window::GetPrimaryWindow();
-    std::string primaryTitle = primary ? primary->GetTitle() : "None";
-    glm::ivec2 primaryRes = primary ? primary->GetSize() : glm::ivec2(0, 0);
+    float currentFps = (currentMs > 0.001f) ? (1000.0f / currentMs) : 0.0f;
 
     // Health color coding
     glm::vec3 badgeColor;
@@ -219,6 +206,41 @@ void DebugWindow::RenderDebugContent(int width, int height) {
         float divW = static_cast<float>(width) - leftMargin * 2.0f;
         drawRect(leftMargin, dy, divW, 1.0f, glm::vec4(0.20f, 0.24f, 0.32f, 0.85f));
     };
+
+    // ========================================================================
+    // LIGHTWEIGHT MODE: Inexpensive checks only (FPS, Avg FPS, Min/Max ms)
+    // Zero profiler overhead, zero software pixel rasterization, zero texture uploads
+    // ========================================================================
+    if (m_lightweight) {
+        float cursorY = fHeight - 26.0f;
+
+        print("DEBUG [LIGHTWEIGHT MODE]", leftMargin, cursorY, glm::vec3(0.45f, 0.75f, 1.0f));
+        print("Inexpensive checks only", leftMargin + 200.0f, cursorY, glm::vec3(0.50f, 0.55f, 0.65f));
+        cursorY -= 12.0f;
+        drawDivider(cursorY);
+        cursorY -= 14.0f;
+
+        // Current FPS & frame time
+        print("Current: " + formatFloat(currentFps, 1) + " FPS  (" + formatFloat(currentMs, 2) + " ms)", leftMargin, cursorY, badgeColor);
+        print("Target: 60.0 FPS (16.67 ms)", leftMargin + 200.0f, cursorY, glm::vec3(0.40f, 0.85f, 0.45f));
+        cursorY -= 16.0f;
+
+        // Average FPS & frame time
+        print("Average: " + formatFloat(fps, 1) + " FPS  (" + formatFloat(avgMs, 2) + " ms)", leftMargin, cursorY, glm::vec3(0.90f, 0.92f, 0.95f));
+        cursorY -= 16.0f;
+
+        // Min & Max frame times
+        print("Min: " + formatFloat(minMs, 1) + " ms  |  Max: " + formatFloat(maxMs, 1) + " ms", leftMargin, cursorY, glm::vec3(0.70f, 0.75f, 0.80f));
+
+        glm::vec3 stabilityColor = (at60Count >= 38)
+            ? glm::vec3(0.40f, 0.85f, 0.45f)
+            : ((at60Count >= 18) ? glm::vec3(0.95f, 0.75f, 0.15f) : glm::vec3(0.95f, 0.25f, 0.25f));
+        print("Stability: " + std::to_string((at60Count * 100) / streamCount) + "% @ 60 FPS", leftMargin + 200.0f, cursorY, stabilityColor);
+
+        cursorY -= 10.0f;
+        drawDivider(cursorY);
+        return;
+    }
 
     float cursorY = fHeight - 32.0f;
 
@@ -439,6 +461,33 @@ void DebugWindow::RenderDebugContent(int width, int height) {
     cursorY -= 14.0f;
 
     // 5. Scene & ECS Breakdown Section
+    std::vector<Scene*> allScenes = Scene::GetAllScenes();
+    int activeScenesCount = 0;
+    int totalEntities = 0;
+    int totalMeshes = 0;
+    int totalLights = 0;
+    int totalCameras = 0;
+    std::string primarySceneName = "None";
+
+    for (Scene* s : allScenes) {
+        if (!s) continue;
+        if (s->GetState() != SceneState::Unloaded) {
+            activeScenesCount++;
+            if (primarySceneName == "None") {
+                primarySceneName = s->GetName();
+            }
+            Registry& reg = s->GetRegistry();
+            totalEntities += static_cast<int>(reg.GetAliveEntityCount());
+            totalMeshes += static_cast<int>(reg.GetComponentCount<MeshRenderer>());
+            totalLights += static_cast<int>(reg.GetComponentCount<LightSource>());
+            totalCameras += static_cast<int>(reg.GetComponentCount<Camera>());
+        }
+    }
+
+    Window* primary = Window::GetPrimaryWindow();
+    std::string primaryTitle = primary ? primary->GetTitle() : "None";
+    glm::ivec2 primaryRes = primary ? primary->GetSize() : glm::ivec2(0, 0);
+
     print("SCENE & ECS BREAKDOWN", leftMargin, cursorY, glm::vec3(0.80f, 0.85f, 0.90f));
     cursorY -= 18.0f;
 

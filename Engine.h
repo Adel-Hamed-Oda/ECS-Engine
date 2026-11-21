@@ -50,14 +50,18 @@ public:
     static void run();
     static void terminate();
 
-    static DebugWindow* OpenDebugWindow(glm::ivec2 position = glm::ivec2(40, 40), glm::ivec2 size = glm::ivec2(720, 580));
+    static DebugWindow* OpenDebugWindow(glm::ivec2 position = glm::ivec2(40, 40), glm::ivec2 size = glm::ivec2(720, 580), bool lightweight = false);
+    static DebugWindow* OpenDebugWindow(bool lightweight);
     static void CloseDebugWindow();
     static DebugWindow* GetDebugWindow();
     static bool IsDebugWindowOpen();
+    static void SetDebugWindowLightweight(bool lightweight);
+    static bool IsDebugWindowLightweight();
 
 private:
     inline static bool active = false;
     inline static float deltaTime = 0.0f;
+    inline static bool s_debugLightweight = false;
 
     static void MainLoop();
     static void UpdateScenes();

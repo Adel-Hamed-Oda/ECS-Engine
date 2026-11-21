@@ -63,31 +63,14 @@ public:
 			return defaultShader;
 		}
 
-		std::string vertCode = FileReader::ReadFirstExisting({
-			"assets/Unlit.vert",
-			"../assets/Unlit.vert",
-			"../../assets/Unlit.vert"
-		});
-
-		std::string fragCode = FileReader::ReadFirstExisting({
-			"assets/Unlit.frag",
-			"../assets/Unlit.frag",
-			"../../assets/Unlit.frag"
-		});
+		std::string vertCode = FileReader::Read("assets/Unlit.vert");
+		std::string fragCode = FileReader::Read("assets/Unlit.frag");
 
 		if (!vertCode.empty() && !fragCode.empty())
 		{
 			defaultShader = std::make_shared<Shader>(vertCode, fragCode);
-			if (defaultShader && defaultShader->IsValid())
-			{
-				return defaultShader;
-			}
 		}
-
-		defaultShader = std::make_shared<Shader>(
-			FallBacks::VertexShaderCode,
-			FallBacks::FragmentShaderCode
-		);
+		
 		return defaultShader;
 	}
 
