@@ -1,6 +1,11 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <string>
+#include <memory>
+#include <utility>
+#include <glm/glm.hpp>
+
 #include "core/rendering/buffers/VAO.h"
 #include "core/rendering/buffers/VBO.h"
 #include "core/rendering/font/Font.h"

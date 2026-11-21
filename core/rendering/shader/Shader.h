@@ -1,6 +1,13 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <string>
+#include <vector>
+#include <memory>
+#include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "core/asset_management/FileReader.h"
 #include "core/FallBacks.h"
 

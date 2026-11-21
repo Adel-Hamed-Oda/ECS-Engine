@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
 
 enum class TextureWrapMode
 {

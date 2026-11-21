@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/private_imports.h"
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 enum class KeyCode {
     A = GLFW_KEY_A,

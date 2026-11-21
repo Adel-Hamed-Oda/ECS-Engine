@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <functional>
+#include <utility>
+
 #include "Registry.h"
 
 // later on, End, Awake, Enable and Disable systems would be added

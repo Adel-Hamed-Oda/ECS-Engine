@@ -1,7 +1,11 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+#include <algorithm>
+#include <utility>
+
 #include "core/global/EngineTime.h"
-#include "core/private_imports.h"
 
 class Timer
 {

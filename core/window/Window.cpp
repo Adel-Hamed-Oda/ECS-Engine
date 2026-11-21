@@ -1,6 +1,14 @@
 #include "core/window/Window.h"
 #include "Engine.h"
-#include "core/private_imports.h"
+
+#include <glad/gl.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <string>
 
 std::vector<Window*> Window::AllWindows;
 int Window::nextId = 0;

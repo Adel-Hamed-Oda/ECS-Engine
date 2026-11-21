@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <iostream>
 #include "core/rendering/buffers/VBO.h"
 #include "core/rendering/buffers/EBO.h"
 

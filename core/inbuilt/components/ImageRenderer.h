@@ -1,6 +1,10 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <memory>
+#include <utility>
+#include <glm/glm.hpp>
+
 #include "core/rendering/buffers/VAO.h"
 #include "core/rendering/buffers/VBO.h"
 #include "core/rendering/texture/Texture.h"

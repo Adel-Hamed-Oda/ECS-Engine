@@ -1,6 +1,11 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <memory>
+#include <cmath>
+#include <utility>
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+
 #include "Mesh.h"
 
 class Primitives {

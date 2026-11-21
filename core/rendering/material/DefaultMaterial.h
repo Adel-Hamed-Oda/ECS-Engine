@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <memory>
+#include <glm/glm.hpp>
+
 #include "WorldspaceMaterial.h"
 #include "core/rendering/texture/Texture.h"
 

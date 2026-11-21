@@ -1,6 +1,16 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <queue>
+#include <vector>
+#include <unordered_map>
+#include <memory>
+#include <algorithm>
+#include <utility>
+#include <cassert>
+#include <cstdint>
+#include <cstddef>
+#include <iostream>
+
 #include "Component.h"
 #include "ComponentPool.h"
 

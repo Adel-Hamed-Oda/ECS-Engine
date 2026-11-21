@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <vector>
+#include <cmath>
+#include <glm/glm.hpp>
 #include "core/ecs/Component.h"
 
 struct Transform2D {

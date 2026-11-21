@@ -1,6 +1,8 @@
 #include "core/scenes/Scene.h"
 #include "core/window/Window.h"
-#include "core/private_imports.h"
+#include <algorithm>
+#include <vector>
+#include <string>
 
 std::vector<Scene*> Scene::scenes;
 

@@ -1,6 +1,10 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <memory>
+#include <string>
+#include <utility>
+#include <glm/glm.hpp>
+
 #include "ScreenspaceMaterial.h"
 
 class TextMaterial : public ScreenspaceMaterial {

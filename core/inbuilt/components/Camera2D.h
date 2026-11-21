@@ -1,6 +1,9 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <vector>
+#include <algorithm>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "Transform2D.h"
 
 struct Camera2D {

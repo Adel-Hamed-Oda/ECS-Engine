@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <vector>
+#include <glm/glm.hpp>
 
 struct Mesh
 {

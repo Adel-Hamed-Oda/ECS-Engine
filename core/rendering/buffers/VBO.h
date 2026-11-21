@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <vector>
+#include <iostream>
 
 class VBO {
 public:

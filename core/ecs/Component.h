@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <cstddef>
+#include <bitset>
 
 using ComponentTypeID = size_t;
 constexpr size_t MAX_COMPONENTS = 64; // For testing purposes only, my small factory game had over 100 components

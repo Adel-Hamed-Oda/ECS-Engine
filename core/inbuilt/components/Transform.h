@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "core/ecs/Component.h"
 
 struct Transform {

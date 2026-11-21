@@ -1,12 +1,17 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <memory>
+#include <vector>
+#include <utility>
+#include <cstddef>
+
 #include "core/rendering/buffers/VAO.h"
 #include "core/rendering/buffers/VBO.h"
 #include "core/rendering/buffers/EBO.h"
 #include "core/rendering/mesh/Mesh.h"
 #include "core/rendering/shader/Shader.h"
-#include "core/rendering/material/WorldSpaceMaterial.h"
+#include "core/rendering/material/WorldspaceMaterial.h"
 
 struct MeshRenderer
 {

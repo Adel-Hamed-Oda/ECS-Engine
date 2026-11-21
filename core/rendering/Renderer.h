@@ -1,6 +1,16 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <cstddef>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "core/scenes/Scene.h"
 #include "core/inbuilt/components/LightSource.h"
 #include "core/inbuilt/components/Transform.h"

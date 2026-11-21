@@ -1,6 +1,16 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#include <string>
+#include <vector>
+#include <map>
+#include <memory>
+#include <utility>
+#include <iostream>
+#include <glm/glm.hpp>
 
 class Renderer;
 

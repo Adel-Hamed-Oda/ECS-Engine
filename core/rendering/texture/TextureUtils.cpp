@@ -1,4 +1,7 @@
 #include "Texture.h"
+#include <stb_image.h>
+#include <algorithm>
+#include <vector>
 
 glm::vec2 Texture::GetImageDimensions(const std::string& imagePath)
 {

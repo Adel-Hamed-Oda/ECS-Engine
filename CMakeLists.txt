@@ -17,7 +17,12 @@ set(FT_DISABLE_PNG      ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI   ON CACHE BOOL "" FORCE)
 
-set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS          OFF CACHE BOOL "" FORCE)
+set(ASSIMP_NO_EXPORT            ON  CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL              OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS   OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_SAMPLES        OFF CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS   OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
@@ -32,6 +37,7 @@ add_library(Engine STATIC
     "core/rendering/texture/Texture.cpp"
     "core/rendering/texture/TextureMap.cpp"
     "core/rendering/texture/TextureUtils.cpp"
+    "core/asset_management/ModelLoader.cpp"
     "external/implementations/glad.cpp"
     "external/implementations/stb.cpp"
 )
@@ -47,6 +53,10 @@ target_include_directories(Engine PUBLIC
 )
 
 find_package(OpenGL REQUIRED)
+
+if(MSVC)
+    target_compile_options(Engine PUBLIC /MP)
+endif()
 
 target_link_libraries(Engine PUBLIC 
     OpenGL::GL

@@ -1,6 +1,11 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <vector>
+#include <cstdint>
+#include <cassert>
+#include <cstddef>
+#include <utility>
+
 #include "Entity.h"
 
 class IComponentArray {

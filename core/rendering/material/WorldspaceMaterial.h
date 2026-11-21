@@ -1,6 +1,12 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <memory>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <iostream>
+#include <cstddef>
+
 #include "core/rendering/shader/Shader.h"
 #include "core/inbuilt/components/Transform.h"
 #include "core/inbuilt/components/Camera.h"

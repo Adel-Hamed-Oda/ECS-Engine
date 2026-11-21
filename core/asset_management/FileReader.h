@@ -1,6 +1,10 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 class FileReader {
 public:

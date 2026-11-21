@@ -1,6 +1,8 @@
 #pragma once
 
-#include "core/private_imports.h"
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 class Mouse {
 public:

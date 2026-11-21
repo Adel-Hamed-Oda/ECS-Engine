@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "Transform.h"
 
 struct Camera {

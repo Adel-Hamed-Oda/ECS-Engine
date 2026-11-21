@@ -1,6 +1,10 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <memory>
+#include <string>
+#include <utility>
+#include <glm/glm.hpp>
+
 #include "WorldspaceMaterial.h"
 #include "core/rendering/texture/Texture.h"
 #include "core/asset_management/FileReader.h"

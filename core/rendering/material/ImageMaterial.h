@@ -1,6 +1,9 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <memory>
+#include <utility>
+#include <glm/glm.hpp>
+
 #include "core/FallBacks.h"
 #include "core/rendering/material/ScreenspaceMaterial.h"
 #include "core/rendering/texture/Texture.h"

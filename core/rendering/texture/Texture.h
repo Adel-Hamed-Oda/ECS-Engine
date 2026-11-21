@@ -1,6 +1,12 @@
 #pragma once
 
-#include "core/private_imports.h"
+#include <glad/gl.h>
+#include <string>
+#include <vector>
+#include <memory>
+#include <utility>
+#include <glm/glm.hpp>
+
 #include "TextureEnums.h"
 
 class Texture

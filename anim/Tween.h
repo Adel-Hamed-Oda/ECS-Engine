@@ -1,7 +1,14 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+#include <algorithm>
+#include <utility>
+#include <type_traits>
+#include <cmath>
+#include <glm/glm.hpp>
+
 #include "core/global/EngineTime.h"
-#include "core/private_imports.h"
 
 class Tween
 {
