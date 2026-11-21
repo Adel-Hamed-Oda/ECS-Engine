@@ -17,9 +17,12 @@ set(FT_DISABLE_PNG      ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI   ON CACHE BOOL "" FORCE)
 
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+
 add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 add_subdirectory(external/freetype)
+add_subdirectory(external/assimp)
 
 add_library(Engine STATIC
     "Engine.cpp"
@@ -49,4 +52,5 @@ target_link_libraries(Engine PUBLIC
     OpenGL::GL
     glfw
     freetype
+    assimp
 )
