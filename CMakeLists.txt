@@ -37,7 +37,7 @@ add_library(Engine STATIC
     "core/rendering/texture/Texture.cpp"
     "core/rendering/texture/TextureMap.cpp"
     "core/rendering/texture/TextureUtils.cpp"
-    "core/asset_management/ModelLoader.cpp"
+    "core/asset_management/ModelLoader/ModelLoader.cpp"
     "external/implementations/glad.cpp"
     "external/implementations/stb.cpp"
 )
@@ -49,6 +49,7 @@ target_include_directories(Engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/external/glad/include
     ${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/include
     ${CMAKE_CURRENT_SOURCE_DIR}/external/freetype/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/assimp/include
     ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
 )
 

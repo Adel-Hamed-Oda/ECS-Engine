@@ -77,14 +77,14 @@ public:
 
 		if (!vertCode.empty() && !fragCode.empty())
 		{
-			defaultShader = Shader::CreateFromSource(vertCode, fragCode);
+			defaultShader = std::make_shared<Shader>(vertCode, fragCode);
 			if (defaultShader && defaultShader->IsValid())
 			{
 				return defaultShader;
 			}
 		}
 
-		defaultShader = Shader::CreateFromSource(
+		defaultShader = std::make_shared<Shader>(
 			FallBacks::VertexShaderCode,
 			FallBacks::FragmentShaderCode
 		);

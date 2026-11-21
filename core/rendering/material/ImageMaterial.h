@@ -56,7 +56,7 @@ public:
             return defaultShader;
         }
 
-        defaultShader = Shader::CreateFromSource(
+        defaultShader = std::make_shared<Shader>(
             FallBacks::ImageVertexShaderCode,
             FallBacks::ImageFragmentShaderCode
         );

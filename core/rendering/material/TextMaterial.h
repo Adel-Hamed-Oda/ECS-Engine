@@ -71,7 +71,7 @@ public:
             }
         )";
 
-        defaultShader = Shader::CreateFromSource(textVertexShader, textFragmentShader);
+        defaultShader = std::make_shared<Shader>(textVertexShader, textFragmentShader);
         return defaultShader;
     }
 

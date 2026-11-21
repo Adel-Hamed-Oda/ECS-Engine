@@ -21,22 +21,8 @@ public:
 
     Shader() = default;
 
-    // Loads and compiles "<basePath>.vert" and "<basePath>.frag" relative to the executable directory.
-    explicit Shader(const std::string& basePath)
-        : Shader(basePath + ".vert", basePath + ".frag") {}
-
-    Shader(const std::string& vertexPath, const std::string& fragmentPath) {
-        const std::string vertexCode = FileReader::Read(vertexPath);
-        const std::string fragmentCode = FileReader::Read(fragmentPath);
+    Shader(const std::string& vertexCode, const std::string& fragmentCode) {
         InitFromSource(vertexCode, fragmentCode);
-    }
-
-    Shader(FromSourceTag, const std::string& vertexCode, const std::string& fragmentCode) {
-        InitFromSource(vertexCode, fragmentCode);
-    }
-
-    static std::shared_ptr<Shader> CreateFromSource(const std::string& vertexCode, const std::string& fragmentCode) {
-        return std::make_shared<Shader>(FromSource, vertexCode, fragmentCode);
     }
 
     Shader(const Shader&) = delete;

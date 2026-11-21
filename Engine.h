@@ -33,6 +33,7 @@
 #include "core/rendering/shader/Shader.h"
 #include "core/FallBacks.h"
 #include "core/rendering/Renderer.h"
+#include "core/asset_management/ModelLoader/ModelLoader.h"
 
 #include "anim/Timer.h"
 #include "anim/Tween.h"
