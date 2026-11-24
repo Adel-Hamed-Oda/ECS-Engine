@@ -67,7 +67,7 @@ public:
 
     void Draw(
         const Transform2D* transform2D,
-        const glm::mat4& orthoProjection,
+        const glm::mat4& viewProj,
         const glm::vec4& tint = glm::vec4(1.0f)
     ) const
     {
@@ -82,7 +82,7 @@ public:
                 mat->texture = texture;
             }
             mat->color = color * tint;
-            mat->ApplyMaterial(transform2D, orthoProjection);
+            mat->ApplyMaterial(transform2D, viewProj);
         }
 
         vao.Bind();

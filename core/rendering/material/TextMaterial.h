@@ -24,10 +24,10 @@ public:
 
     void ApplyMaterial(
         const Transform2D* transform2D,
-        const glm::mat4& orthoProjection
+        const glm::mat4& viewProj
     ) override
     {
-        if (!SetupScreenSpaceUniforms(transform2D, orthoProjection)) return;
+        if (!SetupScreenSpaceUniforms(transform2D, viewProj)) return;
 
         shader->setVec3("textColor", textColor);
         shader->setInt("text", 0);
@@ -45,13 +45,12 @@ public:
             layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
             out vec2 TexCoords;
 
-            uniform mat4 projection;
-            uniform mat4 view;
+            uniform mat4 viewproj;
             uniform mat4 model;
 
             void main()
             {
-                gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
+                gl_Position = viewproj * vec4(vertex.xy, 0.0, 1.0);
                 TexCoords = vertex.zw;
             }
         )";

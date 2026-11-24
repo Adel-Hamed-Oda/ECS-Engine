@@ -23,15 +23,16 @@ public:
 		: WorldspaceMaterial(std::move(shader)) {}
 	~DefaultMaterial() override = default;
 
+	using WorldspaceMaterial::ApplyMaterial;
+
 	void ApplyMaterial(
 		const Transform* transform,
 		const Transform* cameraTransform,
-		const Camera* camera,
-		float aspectRatio,
+		const glm::mat4& viewProj,
 		const std::vector<Light*>& lights
 	) override
 	{
-		if (!SetupCoreUniforms(transform, cameraTransform, camera, aspectRatio)) return;
+		if (!SetupCoreUniforms(transform, cameraTransform, viewProj)) return;
 
 		SendLightsToShader(lights);
 

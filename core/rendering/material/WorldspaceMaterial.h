@@ -26,8 +26,7 @@ public:
     virtual void ApplyMaterial(
         const Transform* transform,
         const Transform* cameraTransform,
-        const Camera* camera,
-        float aspectRatio,
+        const glm::mat4& viewProj,
         const std::vector<Light*>& lights
     ) = 0;
 
@@ -53,14 +52,13 @@ public:
     }
 
     bool SetupCoreUniforms(
-        const Transform* transform, 
-        const Transform* cameraTransform, 
-        const Camera* camera, 
-        const float aspectRatio
+        const Transform* transform,
+        const Transform* cameraTransform,
+        const glm::mat4& viewProj
     ) const {
 		if (!transform || !shader || !shader->IsValid()) return false;
 
-		if (!camera || !cameraTransform)
+		if (!cameraTransform)
 		{
 			std::cerr << "ERROR::MATERIAL::NO_MAIN_CAMERA" << std::endl;
 			return false;
@@ -69,10 +67,24 @@ public:
 		shader->use();
 
 		shader->setMat4("model", transform->GetModelMatrix());
-		shader->setMat4("view", camera->GetViewMatrix(cameraTransform));
-		shader->setMat4("projection", camera->GetProjectionMatrix(aspectRatio));
+		shader->setMat4("viewproj", viewProj);
 		shader->setVec3("viewingPosition", cameraTransform->GetWorldPosition());
 
 		return true;
+	}
+
+    bool SetupCoreUniforms(
+        const Transform* transform, 
+        const Transform* cameraTransform, 
+        const Camera* camera, 
+        const float aspectRatio
+    ) const {
+		if (!camera || !cameraTransform)
+		{
+			std::cerr << "ERROR::MATERIAL::NO_MAIN_CAMERA" << std::endl;
+			return false;
+		}
+
+		return SetupCoreUniforms(transform, cameraTransform, camera->GetViewProjMatrix(cameraTransform, aspectRatio));
 	}
 };

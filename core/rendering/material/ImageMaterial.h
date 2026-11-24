@@ -32,10 +32,10 @@ public:
 
     void ApplyMaterial(
         const Transform2D* transform2D,
-        const glm::mat4& orthoProjection
+        const glm::mat4& viewProj
     ) override
     {
-        if (!SetupScreenSpaceUniforms(transform2D, orthoProjection)) return;
+        if (!SetupScreenSpaceUniforms(transform2D, viewProj)) return;
 
         shader->setVec4("tintColor", color);
         shader->setInt("imageTexture", 0);

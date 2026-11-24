@@ -17,14 +17,13 @@ public:
         layout (location = 3) in vec2 aUV;
 
         uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;
+        uniform mat4 viewproj;
 
         out vec3 localPosition;
 
         void main()
         {
-            gl_Position = projection * view * model * vec4(aPos, 1.0);
+            gl_Position = viewproj * model * vec4(aPos, 1.0);
             localPosition = aPos;
         }
     )";
@@ -67,15 +66,14 @@ public:
         layout (location = 0) in vec4 vertex; // vec2 pos (0..1), vec2 uv (0..1)
 
         uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;
+        uniform mat4 viewproj;
 
         out vec2 TexCoords;
 
         void main()
         {
             TexCoords = vertex.zw;
-            gl_Position = projection * view * model * vec4(vertex.xy, 0.0, 1.0);
+            gl_Position = viewproj * model * vec4(vertex.xy, 0.0, 1.0);
         }
     )";
 

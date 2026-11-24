@@ -68,8 +68,7 @@ public:
     void Draw(
         const Transform* transform,
         const Transform* cameraTransform,
-        const Camera* camera,
-        float aspectRatio,
+        const glm::mat4& viewProj,
         const std::vector<Light*>& lights
     ) const
     {
@@ -77,7 +76,7 @@ public:
 
         if (material)
         {
-            material->ApplyMaterial(transform, cameraTransform, camera, aspectRatio, lights);
+            material->ApplyMaterial(transform, cameraTransform, viewProj, lights);
         }
 
         vao.Bind();

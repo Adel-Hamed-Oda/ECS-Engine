@@ -25,13 +25,17 @@ public:
         return glm::translate(invRotation, -pos);
     }
 
-    glm::mat4 GetViewMatrix(const Transform& transform) const
-    {
-        return GetViewMatrix(&transform);
-    }
-
     glm::mat4 GetProjectionMatrix(float aspectRatio) const
     {
         return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+    }
+
+    glm::mat4 GetViewProjMatrix(const Transform* transform, float aspectRatio) const
+    {
+        if (!transform) return glm::mat4(1.0f);
+        glm::mat4 view = GetViewMatrix(transform);
+        glm::mat4 projection = GetProjectionMatrix(aspectRatio);
+
+        return projection * view;
     }
 };

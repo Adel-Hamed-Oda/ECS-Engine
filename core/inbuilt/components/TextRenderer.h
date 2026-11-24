@@ -69,7 +69,7 @@ public:
 
     void Draw(
         const Transform2D* transform2D,
-        const glm::mat4& orthoProjection,
+        const glm::mat4& viewProj,
         const glm::vec3& color = glm::vec3(1.0f)
     ) const
     {
@@ -78,7 +78,7 @@ public:
 
         if (material)
         {
-            material->ApplyMaterial(transform2D, orthoProjection);
+            material->ApplyMaterial(transform2D, viewProj);
             if (material->shader && material->shader->IsValid() && color != glm::vec3(1.0f))
             {
                 material->shader->setVec3("textColor", color);

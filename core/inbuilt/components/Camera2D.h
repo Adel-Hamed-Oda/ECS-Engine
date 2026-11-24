@@ -40,11 +40,6 @@ public:
         return view;
     }
 
-    glm::mat4 GetViewMatrix(const Transform2D& transform) const
-    {
-        return GetViewMatrix(&transform);
-    }
-
     glm::mat4 GetProjectionMatrix(float aspectRatio) const
     {
         float top = orthographicSize;
@@ -53,6 +48,15 @@ public:
         float left = -orthographicSize * aspectRatio;
 
         return glm::ortho(left, right, bottom, top, nearPlane, farPlane);
+    }
+
+    glm::mat4 GetViewProjMatrix(const Transform2D* transform, float aspectRatio) const
+    {
+        if (!transform) return glm::mat4(1.0f);
+        glm::mat4 view = GetViewMatrix(transform);
+        glm::mat4 projection = GetProjectionMatrix(aspectRatio);
+
+        return projection * view;
     }
 
 private:

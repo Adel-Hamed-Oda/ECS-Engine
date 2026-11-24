@@ -16,18 +16,17 @@ public:
 
     virtual void ApplyMaterial(
         const Transform2D* transform2D,
-        const glm::mat4& orthoProjection
+        const glm::mat4& viewProj
     ) = 0;
 
-    bool SetupScreenSpaceUniforms(const Transform2D* transform2D, const glm::mat4& orthoProjection) const
+    bool SetupScreenSpaceUniforms(const Transform2D* transform2D, const glm::mat4& viewProj) const
     {
         if (!transform2D || !shader || !shader->IsValid()) return false;
 
         shader->use();
 
         shader->setMat4("model", transform2D->GetModelMatrix4());
-        shader->setMat4("view", glm::mat4(1.0f));
-        shader->setMat4("projection", orthoProjection);
+        shader->setMat4("viewproj", viewProj);
 
         return true;
     }
@@ -36,13 +35,12 @@ public:
     {
         if (!transform || !shader || !shader->IsValid()) return false;
 
-        const glm::mat4 orthoProjection = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, -10.0f, 10.0f);
+        const glm::mat4 viewProj = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, -10.0f, 10.0f);
 
         shader->use();
 
         shader->setMat4("model", transform->GetModelMatrix());
-        shader->setMat4("view", glm::mat4(1.0f));
-        shader->setMat4("projection", orthoProjection);
+        shader->setMat4("viewproj", viewProj);
 
         return true;
     }

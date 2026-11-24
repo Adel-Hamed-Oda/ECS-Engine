@@ -60,11 +60,7 @@ public:
             ? static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight)
             : 1.0f;
 
-        glm::mat4 view(1.0f);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 1000.0f);
-
         Registry& registry = scene->GetRegistry();
-        bool cameraFound = false;
 
         const Camera& cam = registry.HasComponent<Camera>(cameraEntity)
             ? registry.GetComponent<Camera>(cameraEntity)
@@ -72,8 +68,7 @@ public:
         const Transform& camTransform = registry.HasComponent<Transform>(cameraEntity)
             ? registry.GetComponent<Transform>(cameraEntity)
             : Transform();
-        view = cam.GetViewMatrix(camTransform);
-        projection = cam.GetProjectionMatrix(aspectRatio);
+        const glm::mat4 viewProj = cam.GetViewProjMatrix(&camTransform, aspectRatio);
 
         registry.ForEach<Transform, LightSource>([&](Entity e, Transform& transform, LightSource& lightSource) {
             Light* light = new Light();
@@ -83,7 +78,7 @@ public:
         });
 
         registry.ForEach<Transform, MeshRenderer>([&](Entity e, Transform& transform, MeshRenderer& meshRenderer) {
-            meshRenderer.Draw(&transform, &camTransform, &cam, aspectRatio, lights);
+            meshRenderer.Draw(&transform, &camTransform, viewProj, lights);
         });
 
         // default orthographic projection for 2D rendering (cause why not)
