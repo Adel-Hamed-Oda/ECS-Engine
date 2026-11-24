@@ -9,7 +9,7 @@ enum class ModelLoaderFlags : unsigned int {
     CalcTangentSpace      = 1 << 4,
     JoinIdenticalVertices = 1 << 5,
     OptimizeMeshes        = 1 << 6,
-    Default               = Triangulate | GenSmoothNormals | FlipUVs | JoinIdenticalVertices
+    Default               = Triangulate | GenSmoothNormals | FlipUVs | CalcTangentSpace | JoinIdenticalVertices
 };
 
 inline ModelLoaderFlags operator|(ModelLoaderFlags a, ModelLoaderFlags b) {

@@ -14,6 +14,8 @@
 class DefaultMaterial : public WorldspaceMaterial {
 public:
 	Texture* texture = nullptr;
+	Texture* normalMap = nullptr;
+	Texture* roughnessMap = nullptr;
 	glm::vec4 baseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 ambient = glm::vec3(0.1f);
 	float specularStrength = 0.5f;
@@ -36,6 +38,26 @@ public:
 
 		SendLightsToShader(lights);
 
+		const bool hasNormalMap = normalMap && normalMap->IsValid();
+		if (hasNormalMap)
+		{
+			normalMap->Bind(1);
+		}
+		else
+		{
+			Texture::Unbind(1);
+		}
+
+		const bool hasRoughnessMap = roughnessMap && roughnessMap->IsValid();
+		if (hasRoughnessMap)
+		{
+			roughnessMap->Bind(2);
+		}
+		else
+		{
+			Texture::Unbind(2);
+		}
+
 		const bool hasTexture = texture && texture->IsValid();
 		if (hasTexture)
 		{
@@ -48,6 +70,12 @@ public:
 
 		shader->setBool("material.hasTexture", hasTexture);
 		shader->setInt("material.textureSampler", 0);
+
+		shader->setBool("material.hasNormalMap", hasNormalMap);
+		shader->setInt("material.normalMap", 1);
+
+		shader->setBool("material.hasRoughnessMap", hasRoughnessMap);
+		shader->setInt("material.roughnessMap", 2);
 		
 		shader->setVec4("material.baseColor", baseColor);
 		shader->setVec3("material.ambient", ambient);

@@ -166,13 +166,40 @@ static std::shared_ptr<DefaultMaterial> LoadAssimpMaterial(
         material->specularStrength = (specularColor.r + specularColor.g + specularColor.b) / 3.0f;
     }
 
+    // 1. Base Color / Diffuse Map
     std::shared_ptr<Texture> tex = LoadMaterialTexture(scene, aiMat, aiTextureType_DIFFUSE, directory, cache);
     if (!tex) {
         tex = LoadMaterialTexture(scene, aiMat, aiTextureType_BASE_COLOR, directory, cache);
     }
-
     if (tex) {
         material->texture = tex.get();
+    }
+
+    // 2. Normal Map (OBJ/MTL map_Bump is often mapped to HEIGHT or NORMALS by Assimp)
+    std::shared_ptr<Texture> normTex = LoadMaterialTexture(scene, aiMat, aiTextureType_NORMALS, directory, cache);
+    if (!normTex) {
+        normTex = LoadMaterialTexture(scene, aiMat, aiTextureType_NORMAL_CAMERA, directory, cache);
+    }
+    if (!normTex) {
+        normTex = LoadMaterialTexture(scene, aiMat, aiTextureType_HEIGHT, directory, cache);
+    }
+    if (normTex) {
+        material->normalMap = normTex.get();
+    }
+
+    // 3. Roughness / Specular Map
+    std::shared_ptr<Texture> roughTex = LoadMaterialTexture(scene, aiMat, aiTextureType_DIFFUSE_ROUGHNESS, directory, cache);
+    if (!roughTex) {
+        roughTex = LoadMaterialTexture(scene, aiMat, aiTextureType_SPECULAR, directory, cache);
+    }
+    if (!roughTex) {
+        roughTex = LoadMaterialTexture(scene, aiMat, aiTextureType_SHININESS, directory, cache);
+    }
+    if (!roughTex) {
+        roughTex = LoadMaterialTexture(scene, aiMat, aiTextureType_UNKNOWN, directory, cache);
+    }
+    if (roughTex) {
+        material->roughnessMap = roughTex.get();
     }
 
     return material;
@@ -184,10 +211,12 @@ static std::shared_ptr<Mesh> LoadAssimpMesh(const aiMesh* aiM) {
     mesh->normals.reserve(aiM->mNumVertices);
     mesh->uvs.reserve(aiM->mNumVertices);
     mesh->colors.reserve(aiM->mNumVertices);
+    mesh->tangents.reserve(aiM->mNumVertices);
 
     const bool hasNormals = aiM->HasNormals();
     const bool hasUVs = aiM->HasTextureCoords(0);
     const bool hasColors = aiM->HasVertexColors(0);
+    const bool hasTangents = aiM->HasTangentsAndBitangents();
 
     for (unsigned int v = 0; v < aiM->mNumVertices; ++v) {
         mesh->vertices.emplace_back(aiM->mVertices[v].x, aiM->mVertices[v].y, aiM->mVertices[v].z);
@@ -208,6 +237,12 @@ static std::shared_ptr<Mesh> LoadAssimpMesh(const aiMesh* aiM) {
             mesh->colors.emplace_back(aiM->mColors[0][v].r, aiM->mColors[0][v].g, aiM->mColors[0][v].b, aiM->mColors[0][v].a);
         } else {
             mesh->colors.emplace_back(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
+        if (hasTangents) {
+            mesh->tangents.emplace_back(aiM->mTangents[v].x, aiM->mTangents[v].y, aiM->mTangents[v].z);
+        } else {
+            mesh->tangents.emplace_back(0.0f, 0.0f, 0.0f);
         }
     }
 

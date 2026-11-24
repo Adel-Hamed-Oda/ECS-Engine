@@ -37,6 +37,7 @@ public:
           normalVBO(std::move(other.normalVBO)),
           colorVBO(std::move(other.colorVBO)),
           uvVBO(std::move(other.uvVBO)),
+          tangentVBO(std::move(other.tangentVBO)),
           indicesCount(other.indicesCount)
     {
         other.indicesCount = 0;
@@ -56,6 +57,7 @@ public:
             normalVBO = std::move(other.normalVBO);
             colorVBO = std::move(other.colorVBO);
             uvVBO = std::move(other.uvVBO);
+            tangentVBO = std::move(other.tangentVBO);
             indicesCount = other.indicesCount;
 
             other.indicesCount = 0;
@@ -98,6 +100,7 @@ private:
     VBO normalVBO;
     VBO colorVBO;
     VBO uvVBO;
+    VBO tangentVBO;
 
     size_t indicesCount = 0;
 
@@ -129,6 +132,9 @@ private:
         uvVBO = VBO(mesh->uvs);
         vao.LinkAttrib(uvVBO, 3, 2, GL_FLOAT, sizeof(glm::vec2), nullptr);
 
+        tangentVBO = VBO(mesh->tangents);
+        vao.LinkAttrib(tangentVBO, 4, 3, GL_FLOAT, sizeof(glm::vec3), nullptr);
+
         // Unbind VAO before unbinding EBO so the VAO preserves its EBO binding
         VAO::Unbind();
         VBO::Unbind();
@@ -141,6 +147,7 @@ private:
         normalVBO.Delete();
         colorVBO.Delete();
         uvVBO.Delete();
+        tangentVBO.Delete();
         posVBO.Delete();
         vao.Delete();
         indicesCount = 0;
