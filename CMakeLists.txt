@@ -38,6 +38,9 @@ add_library(Engine STATIC
     "core/rendering/texture/TextureMap.cpp"
     "core/rendering/texture/TextureUtils.cpp"
     "core/asset_management/ModelLoader/ModelLoader.cpp"
+    "core/asset_management/ModelLoader/MeshLoader.cpp"
+    "core/asset_management/ModelLoader/MaterialLoader.cpp"
+    "core/asset_management/ModelLoader/TextureLoader.cpp"
     "external/implementations/glad.cpp"
     "external/implementations/stb.cpp"
 )

@@ -3,9 +3,14 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "ModelData.h"
 #include "ModelLoadingFlags.h"
+
+struct aiScene;
+struct aiMaterial;
+struct aiMesh;
 
 class ModelLoader {
 public:
@@ -20,4 +25,24 @@ public:
 
 private:
     ModelLoader() = delete;
+
+    static std::string GetDirectory(const std::string& filepath);
+    static std::string GetFilename(const std::string& filepath);
+
+    static std::shared_ptr<Mesh> LoadAssimpMesh(const aiMesh* aiM);
+
+    static std::shared_ptr<DefaultMaterial> LoadAssimpMaterial(
+        const aiScene* scene,
+        const aiMaterial* aiMat,
+        const std::string& directory,
+        std::unordered_map<std::string, std::shared_ptr<Texture>>& cache
+    );
+
+    static std::shared_ptr<Texture> LoadMaterialTexture(
+        const aiScene* scene,
+        const aiMaterial* mat,
+        int type,
+        const std::string& directory,
+        std::unordered_map<std::string, std::shared_ptr<Texture>>& cache
+    );
 };
