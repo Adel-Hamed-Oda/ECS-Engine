@@ -2,34 +2,10 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-struct BoneInfo {
-    int id = -1;
-    glm::mat4 offsetMatrix = glm::mat4(1.0f);
-    glm::mat4 invBindTransform = glm::mat4(1.0f);
-};
-
-struct SkeletonNode {
-    std::string name;
-    glm::mat4 transformation = glm::mat4(1.0f);
-    std::vector<SkeletonNode> children;
-};
-
-struct Skeleton {
-    std::unordered_map<std::string, BoneInfo> boneInfoMap;
-    int boneCount = 0;
-    SkeletonNode rootNode;
-    glm::mat4 globalInverseTransform = glm::mat4(1.0f);
-
-    bool HasBones() const {
-        return boneCount > 0;
-    }
-};
 
 struct KeyPosition {
     glm::vec3 position = glm::vec3(0.0f);
@@ -165,17 +141,5 @@ private:
             scaleFactor
         );
         return glm::scale(glm::mat4(1.0f), finalScale);
-    }
-};
-
-struct AnimationClip {
-    std::string name;
-    float duration = 0.0f;
-    float ticksPerSecond = 25.0f;
-    std::unordered_map<std::string, BoneChannel> channels;
-
-    const BoneChannel* FindChannel(const std::string& nodeName) const {
-        auto it = channels.find(nodeName);
-        return (it != channels.end()) ? &it->second : nullptr;
     }
 };

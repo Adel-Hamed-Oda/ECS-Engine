@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "core/rendering/mesh/Mesh.h"
-#include "core/asset_management/ModelLoader/AnimationData.h"
+#include "anim/AnimationData.h"
 
 struct Animation {
 public:

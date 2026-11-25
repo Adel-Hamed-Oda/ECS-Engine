@@ -39,6 +39,7 @@
 
 #include "anim/Timer.h"
 #include "anim/Tween.h"
+#include "anim/AnimationData.h"
 
 #include "peripherals/KeyBoard.h"
 #include "peripherals/KeyCode.h"

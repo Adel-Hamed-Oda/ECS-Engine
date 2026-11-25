@@ -7,7 +7,7 @@
 #include "core/rendering/mesh/Mesh.h"
 #include "core/rendering/texture/Texture.h"
 #include "core/rendering/material/DefaultMaterial.h"
-#include "AnimationData.h"
+#include "anim/AnimationData.h"
 
 struct ModelPart {
     std::string name;
