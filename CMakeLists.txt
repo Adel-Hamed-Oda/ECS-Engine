@@ -41,6 +41,7 @@ add_library(Engine STATIC
     "core/asset_management/ModelLoader/MeshLoader.cpp"
     "core/asset_management/ModelLoader/MaterialLoader.cpp"
     "core/asset_management/ModelLoader/TextureLoader.cpp"
+    "core/asset_management/ModelLoader/AnimationLoader.cpp"
     "external/implementations/glad.cpp"
     "external/implementations/stb.cpp"
 )

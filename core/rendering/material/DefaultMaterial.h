@@ -25,8 +25,6 @@ public:
 		: WorldspaceMaterial(std::move(shader)) {}
 	~DefaultMaterial() override = default;
 
-	using WorldspaceMaterial::ApplyMaterial;
-
 	void ApplyMaterial(
 		const Transform* transform,
 		const Transform* cameraTransform,

@@ -38,6 +38,8 @@ public:
           colorVBO(std::move(other.colorVBO)),
           uvVBO(std::move(other.uvVBO)),
           tangentVBO(std::move(other.tangentVBO)),
+          boneIdVBO(std::move(other.boneIdVBO)),
+          boneWeightVBO(std::move(other.boneWeightVBO)),
           indicesCount(other.indicesCount)
     {
         other.indicesCount = 0;
@@ -58,6 +60,8 @@ public:
             colorVBO = std::move(other.colorVBO);
             uvVBO = std::move(other.uvVBO);
             tangentVBO = std::move(other.tangentVBO);
+            boneIdVBO = std::move(other.boneIdVBO);
+            boneWeightVBO = std::move(other.boneWeightVBO);
             indicesCount = other.indicesCount;
 
             other.indicesCount = 0;
@@ -71,7 +75,8 @@ public:
         const Transform* transform,
         const Transform* cameraTransform,
         const glm::mat4& viewProj,
-        const std::vector<Light*>& lights
+        const std::vector<Light*>& lights,
+        const Animation* animation = nullptr
     ) const
     {
         if (!vao.IsValid()) return;
@@ -79,6 +84,7 @@ public:
         if (material)
         {
             material->ApplyMaterial(transform, cameraTransform, viewProj, lights);
+            material->SendBonesToShader(animation);
         }
 
         vao.Bind();
@@ -101,6 +107,8 @@ private:
     VBO colorVBO;
     VBO uvVBO;
     VBO tangentVBO;
+    VBO boneIdVBO;
+    VBO boneWeightVBO;
 
     size_t indicesCount = 0;
 
@@ -132,8 +140,23 @@ private:
         uvVBO = VBO(mesh->uvs);
         vao.LinkAttrib(uvVBO, 3, 2, GL_FLOAT, sizeof(glm::vec2), nullptr);
 
-        tangentVBO = VBO(mesh->tangents);
-        vao.LinkAttrib(tangentVBO, 4, 3, GL_FLOAT, sizeof(glm::vec3), nullptr);
+        if (!mesh->tangents.empty())
+        {
+            tangentVBO = VBO(mesh->tangents);
+            vao.LinkAttrib(tangentVBO, 4, 3, GL_FLOAT, sizeof(glm::vec3), nullptr);
+        }
+
+        if (!mesh->boneIDs.empty())
+        {
+            boneIdVBO = VBO(mesh->boneIDs);
+            vao.LinkAttrib(boneIdVBO, 5, 4, GL_INT, sizeof(glm::ivec4), nullptr);
+        }
+
+        if (!mesh->boneWeights.empty())
+        {
+            boneWeightVBO = VBO(mesh->boneWeights);
+            vao.LinkAttrib(boneWeightVBO, 6, 4, GL_FLOAT, sizeof(glm::vec4), nullptr);
+        }
 
         // Unbind VAO before unbinding EBO so the VAO preserves its EBO binding
         VAO::Unbind();
@@ -148,6 +171,8 @@ private:
         colorVBO.Delete();
         uvVBO.Delete();
         tangentVBO.Delete();
+        boneIdVBO.Delete();
+        boneWeightVBO.Delete();
         posVBO.Delete();
         vao.Delete();
         indicesCount = 0;

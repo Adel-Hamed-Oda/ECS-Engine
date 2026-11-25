@@ -26,8 +26,6 @@ public:
 
 	~UnlitMaterial() override = default;
 
-	using WorldspaceMaterial::ApplyMaterial;
-
 	void ApplyMaterial(
 		const Transform* transform,
 		const Transform* cameraTransform,

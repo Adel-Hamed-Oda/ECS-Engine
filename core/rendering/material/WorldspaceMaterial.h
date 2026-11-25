@@ -11,6 +11,7 @@
 #include "core/inbuilt/components/Transform.h"
 #include "core/inbuilt/components/Camera.h"
 #include "core/inbuilt/components/LightSource.h"
+#include "core/inbuilt/components/Animation.h"
 #include "Material.h"
 
 struct Light {
@@ -48,6 +49,25 @@ public:
 
             shader->setVec3( prefix + "position", light->transform->position );
             shader->setVec3( prefix + "color", light->lightSource->color );
+        }
+    }
+
+    void SendBonesToShader(const Animation* animation) const
+    {
+        if (!shader || !shader->IsValid()) return;
+
+        if (!animation || !animation->HasValidBones())
+        {
+            shader->setBool("hasBones", false);
+            return;
+        }
+
+        shader->setBool("hasBones", true);
+        const auto& matrices = animation->finalBoneMatrices;
+        const int boneCount = static_cast<int>(std::min(matrices.size(), static_cast<std::size_t>(Mesh::MAX_BONES)));
+        for (int i = 0; i < boneCount; ++i)
+        {
+            shader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", matrices[i]);
         }
     }
 

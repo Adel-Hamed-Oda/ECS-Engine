@@ -60,13 +60,21 @@ public:
         const GLenum type,
         const GLsizei stride,
         const void* offset = nullptr,
-        const GLboolean normalized = GL_FALSE
+        const bool normalized = false
     ) const {
         if (ID == 0 || !vbo.IsValid()) return;
 
         Bind();
         vbo.Bind();
-        glVertexAttribPointer(layout, numComponents, type, normalized, stride, offset);
+
+        GLboolean gl_normalized = normalized ? GL_TRUE : GL_FALSE;
+
+        if (type == GL_INT || type == GL_UNSIGNED_INT || type == GL_SHORT || type == GL_UNSIGNED_SHORT || type == GL_BYTE || type == GL_UNSIGNED_BYTE) {
+            glVertexAttribIPointer(layout, numComponents, type, stride, offset);
+        } else {
+            glVertexAttribPointer(layout, numComponents, type, gl_normalized, stride, offset);
+        }
+
         glEnableVertexAttribArray(layout);
         VBO::Unbind();
     }

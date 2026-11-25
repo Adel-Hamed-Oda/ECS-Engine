@@ -11,10 +11,11 @@
 struct aiScene;
 struct aiMaterial;
 struct aiMesh;
+struct aiNode;
 
 class ModelLoader {
 public:
-    // Core loader: loads a 3D model/scene file and extracts meshes, textures, materials, and parts
+    // Core loader: loads a 3D model/scene file and extracts meshes, textures, materials, parts, skeleton, and animations
     static ModelData Load(const std::string& filepath, ModelLoaderFlags flags = ModelLoaderFlags::Default);
     static bool Load(const std::string& filepath, ModelData& outModel, ModelLoaderFlags flags = ModelLoaderFlags::Default);
 
@@ -22,6 +23,7 @@ public:
     static std::vector<std::shared_ptr<Mesh>> LoadMeshes(const std::string& filepath, ModelLoaderFlags flags = ModelLoaderFlags::Default);
     static std::vector<std::shared_ptr<Texture>> LoadTextures(const std::string& filepath);
     static std::vector<std::shared_ptr<DefaultMaterial>> LoadMaterials(const std::string& filepath);
+    static std::vector<std::shared_ptr<AnimationClip>> LoadAnimations(const std::string& filepath, ModelLoaderFlags flags = ModelLoaderFlags::Default);
 
 private:
     ModelLoader() = delete;
@@ -29,7 +31,9 @@ private:
     static std::string GetDirectory(const std::string& filepath);
     static std::string GetFilename(const std::string& filepath);
 
-    static std::shared_ptr<Mesh> LoadAssimpMesh(const aiMesh* aiM);
+    static std::shared_ptr<Mesh> LoadAssimpMesh(const aiMesh* aiM, Skeleton* skeleton = nullptr);
+    static void BuildSkeletonHierarchy(const aiNode* srcNode, SkeletonNode& outNode);
+    static void LoadAssimpAnimations(const aiScene* scene, ModelData& outModel);
 
     static std::shared_ptr<DefaultMaterial> LoadAssimpMaterial(
         const aiScene* scene,

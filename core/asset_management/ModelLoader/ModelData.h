@@ -7,6 +7,7 @@
 #include "core/rendering/mesh/Mesh.h"
 #include "core/rendering/texture/Texture.h"
 #include "core/rendering/material/DefaultMaterial.h"
+#include "AnimationData.h"
 
 struct ModelPart {
     std::string name;
@@ -30,12 +31,25 @@ struct ModelData {
     // Hierarchical model parts (mesh + material + transform)
     std::vector<ModelPart> parts;
 
+    // Skeletal hierarchy & animations
+    std::shared_ptr<Skeleton> skeleton;
+    std::vector<std::shared_ptr<AnimationClip>> animations;
+
     bool IsValid() const {
         return !meshes.empty();
+    }
+
+    bool HasSkeleton() const {
+        return skeleton && skeleton->HasBones();
+    }
+
+    bool HasAnimations() const {
+        return !animations.empty();
     }
 
     size_t GetMeshCount() const { return meshes.size(); }
     size_t GetTextureCount() const { return textures.size(); }
     size_t GetMaterialCount() const { return materials.size(); }
     size_t GetPartCount() const { return parts.size(); }
+    size_t GetAnimationCount() const { return animations.size(); }
 };

@@ -17,6 +17,7 @@
 #include "core/inbuilt/components/Transform2D.h"
 #include "core/inbuilt/components/Camera.h"
 #include "core/inbuilt/components/MeshRenderer.h"
+#include "core/inbuilt/components/Animation.h"
 #include "core/inbuilt/components/TextRenderer.h"
 #include "core/inbuilt/components/ImageRenderer.h"
 #include "core/rendering/material/ImageMaterial.h"
@@ -77,8 +78,14 @@ public:
             lights.push_back(light);
         });
 
+        // Normal rendering
         registry.ForEach<Transform, MeshRenderer>([&](Entity e, Transform& transform, MeshRenderer& meshRenderer) {
+            if (registry.HasComponent<Animation>(e)) return;
             meshRenderer.Draw(&transform, &camTransform, viewProj, lights);
+        });
+        // Animated rendering
+        registry.ForEach<Transform, MeshRenderer, Animation>([&](Entity e, Transform& transform, MeshRenderer& meshRenderer, Animation& animation) {
+            meshRenderer.Draw(&transform, &camTransform, viewProj, lights, &animation);
         });
 
         // default orthographic projection for 2D rendering (cause why not)

@@ -114,10 +114,11 @@ bool ModelLoader::Load(const std::string& filepath, ModelData& outModel, ModelLo
         outModel.materials.push_back(LoadAssimpMaterial(scene, scene->mMaterials[m], outModel.directory, textureCache));
     }
 
-    // 2. Load all meshes
+    // 2. Load all meshes (and extract bone weights into skeleton)
+    outModel.skeleton = std::make_shared<Skeleton>();
     outModel.meshes.reserve(scene->mNumMeshes);
     for (unsigned int m = 0; m < scene->mNumMeshes; ++m) {
-        outModel.meshes.push_back(LoadAssimpMesh(scene->mMeshes[m]));
+        outModel.meshes.push_back(LoadAssimpMesh(scene->mMeshes[m], outModel.skeleton.get()));
     }
 
     // 3. Process node hierarchy into parts
@@ -142,7 +143,12 @@ bool ModelLoader::Load(const std::string& filepath, ModelData& outModel, ModelLo
         }
     }
 
-    // 4. Collect all loaded unique textures
+    // 4. Build skeleton node hierarchy and load animation clips
+    if (outModel.skeleton->HasBones() || scene->HasAnimations()) {
+        LoadAssimpAnimations(scene, outModel);
+    }
+
+    // 5. Collect all loaded unique textures
     for (auto& [path, tex] : textureCache) {
         if (tex) {
             outModel.textures.push_back(tex);

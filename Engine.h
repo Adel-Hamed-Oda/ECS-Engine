@@ -14,8 +14,10 @@
 #include "core/inbuilt/components/Camera2D.h"
 #include "core/inbuilt/components/LightSource.h"
 #include "core/inbuilt/components/MeshRenderer.h"
+#include "core/inbuilt/components/Animation.h"
 #include "core/inbuilt/components/TextRenderer.h"
 #include "core/inbuilt/components/ImageRenderer.h"
+#include "core/inbuilt/systems/Play.h"
 
 #include "core/rendering/material/Material.h"
 #include "core/rendering/material/WorldspaceMaterial.h"
