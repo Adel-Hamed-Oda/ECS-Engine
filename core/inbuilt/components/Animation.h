@@ -17,6 +17,7 @@ public:
     float speed = 1.0f;
     bool isPlaying = true;
     bool hasFinished = false;
+    bool repeat = false;
 
     std::vector<glm::mat4> finalBoneMatrices;
 
@@ -27,7 +28,8 @@ public:
         std::shared_ptr<Skeleton> skeleton,
         std::shared_ptr<AnimationClip> clip,
         float speed = 1.0f,
-        bool playOnStart = true
+        bool playOnStart = true,
+        bool repeat = false
     )
         : skeleton(std::move(skeleton)),
           clip(std::move(clip)),
@@ -35,6 +37,7 @@ public:
           speed(speed),
           isPlaying(playOnStart),
           hasFinished(false),
+          repeat(repeat),
           finalBoneMatrices(Mesh::MAX_BONES, glm::mat4(1.0f)) {}
 
     template <typename TModelData, typename = decltype(std::declval<TModelData>().skeleton)>
@@ -42,7 +45,8 @@ public:
         const TModelData& model,
         size_t clipIndex = 0,
         float speed = 1.0f,
-        bool playOnStart = true
+        bool playOnStart = true,
+        bool repeat = false
     )
         : skeleton(model.skeleton),
           clip(clipIndex < model.animations.size() ? model.animations[clipIndex] : nullptr),
@@ -50,6 +54,7 @@ public:
           speed(speed),
           isPlaying(playOnStart),
           hasFinished(false),
+          repeat(repeat),
           finalBoneMatrices(Mesh::MAX_BONES, glm::mat4(1.0f)) {}
 
     void PlayOnce() {

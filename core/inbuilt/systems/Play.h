@@ -1,13 +1,14 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <glm/glm.hpp>
 
 #include "core/ecs/System.h"
 #include "core/global/EngineTime.h"
 #include "core/inbuilt/components/Animation.h"
 
-// Inbuilt ECS system that plays an Animation component once from start to finish
+// Inbuilt ECS system that plays an Animation component (once or repeating)
 class Play : public System<Animation> {
 public:
     Play()
@@ -44,11 +45,36 @@ public:
         const float dt = std::min(static_cast<float>(Time::deltaTime), 0.1f);
         anim.currentTime += dt * ticksPerSecond * anim.speed;
 
-        // Play the animation once and stop at the final pose
-        if (anim.currentTime >= anim.clip->duration) {
-            anim.currentTime = anim.clip->duration;
-            anim.isPlaying = false;
-            anim.hasFinished = true;
+        const float duration = anim.clip->duration;
+        if (duration <= 0.0f) {
+            anim.currentTime = 0.0f;
+            if (!anim.repeat) {
+                anim.isPlaying = false;
+                anim.hasFinished = true;
+            }
+        } else if (anim.currentTime >= duration) {
+            if (anim.repeat) {
+                anim.currentTime = std::fmod(anim.currentTime, duration);
+                anim.hasFinished = false;
+                anim.isPlaying = true;
+            } else {
+                anim.currentTime = duration;
+                anim.isPlaying = false;
+                anim.hasFinished = true;
+            }
+        } else if (anim.currentTime < 0.0f) {
+            if (anim.repeat) {
+                anim.currentTime = std::fmod(anim.currentTime, duration);
+                if (anim.currentTime < 0.0f) {
+                    anim.currentTime += duration;
+                }
+                anim.hasFinished = false;
+                anim.isPlaying = true;
+            } else {
+                anim.currentTime = 0.0f;
+                anim.isPlaying = false;
+                anim.hasFinished = true;
+            }
         }
 
         CalculateBoneTransform(anim, anim.skeleton->rootNode, glm::mat4(1.0f));
